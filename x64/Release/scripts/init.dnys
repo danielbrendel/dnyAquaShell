@@ -1,0 +1,3 @@
+# init.dnys :: Put initialization code here
+
+print "init.dnys :: done";

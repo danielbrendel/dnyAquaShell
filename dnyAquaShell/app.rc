@@ -1,0 +1,4 @@
+#include "resource.h"
+
+ID_APPICON ICON "app.ico"
+ID_APPICON_SM ICON "app_sm.ico"

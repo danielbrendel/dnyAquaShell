@@ -1,0 +1,91 @@
+#dnyScriptParser demo script file
+
+require "demo";
+
+declare boolvar bool;
+declare intvar int;
+declare floatvar float;
+declare stringvar string;
+declare stringvar2 string;
+
+set boolvar <= true;
+set intvar <= 100;
+set floatvar <= 0.5;
+set stringvar <= "Hi there";
+set stringvar2 <= "%stringvar";
+
+print "%stringvar %stringvar2";#Comments can be put alone in a single line or at the end of the line
+
+if(%stringvar, -eq, "Hi there2")
+{
+	print "They are equal! %stringvar";
+}
+elseif(%stringvar, -nt, "Hi there2")
+{
+	print "Elseif...";
+};
+
+function somefunc int(arg1 string, arg2 string)
+{
+	print "%arg1 %arg2";
+	result 0;
+};
+
+print "between";
+
+function callme int(arg1 int)
+{
+	print "You have called me! %arg1";
+	declare temp int;
+	set temp <= %arg1;
+	*= temp 1000;
+	result %temp;
+	undeclare temp;
+};
+
+print "1.: %intvar";
+
+call somefunc("test1", "test2") => intvar;
+
+print "2.: %intvar";
+
+mycommand "This is a text";
+mycommand2 5 floatvar;
+
+print "3. %floatvar";
+
+for(i, 10, 0, -dec)
+{
+	if(%i, -lse, 4)
+	{
+		print "Iteration num: %i";
+		
+		for(j, 0, 100, 50){print "Another for-loop! %j";};
+	}
+	elseif(%i, -eq, 5)
+	{
+		print "It's 5!";
+	}
+	else
+	{
+		print "Else";
+	};
+};
+
+declare whilevar int;
+set whilevar <= 0;
+while(%whilevar, -ls, 20)
+{
+	print "While-var: %whilevar";
+	+= whilevar 2;
+};
+
+undeclare whilevar;
+
+print "%whilevar";
+
+sys pause;
+
+exit;
+
+print "This one is never executed!";

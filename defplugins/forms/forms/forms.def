@@ -1,0 +1,5 @@
+LIBRARY forms
+EXPORTS
+	DllMain @ 1
+	dnyAS_PluginLoad @ 2
+	dnyAS_PluginUnload @ 3
