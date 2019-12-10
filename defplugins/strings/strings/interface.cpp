@@ -386,7 +386,7 @@ plugininfo_s g_sPluginInfos = {
 	L"Strings",
 	L"0.1",
 	L"Daniel Brendel",
-	L"Daniel Brendel<at>gmail<dot>com",
+	L"dbrendel1988<at>yahoo<dot>com",
 	L"String handling helper"
 };
 

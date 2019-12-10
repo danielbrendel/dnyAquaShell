@@ -12,7 +12,7 @@
 	(C) 2017 by Daniel Brendel
 	
 	Version: 0.1
-	Contact: Daniel Brendel<at>gmail<dot>com
+	Contact: dbrendel1988<at>yahoo<dot>com
 	GitHub: https://github.com/danielbrendel
 	
 	Licence: Creative Commons Attribution-NoDerivatives 4.0 International
@@ -25,7 +25,7 @@ namespace dnyWinForms {
 	std::wstring Name(void) { return L"dnyWinForms"; }
 	std::wstring Author(void) { return L"Daniel Brendel"; }
 	std::wstring Version(void) { return L"0.1"; }
-	std::wstring Contact(void) { return L"Daniel Brendel<at>gmail<dot>com"; }
+	std::wstring Contact(void) { return L"dbrendel1988<at>yahoo<dot>com"; }
 
 	/* Component classes */
 

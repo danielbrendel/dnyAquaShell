@@ -6,7 +6,7 @@
 	(C) 2017-2018 by Daniel Brendel
 
 	Version: 0.1
-	Contact: Daniel Brendel<at>gmail<dot>com
+	Contact: dbrendel1988<at>yahoo<dot>com
 	GitHub: https://github.com/danielbrendel
 
 	Licence: Creative Commons Attribution-NoDerivatives 4.0 International
