@@ -14,7 +14,7 @@
 	(C) 2017-2018 by Daniel Brendel
 
 	Version: 0.1
-	Contact: dbrendel1988<at>yahoo<dot>com
+	Contact: dbrendel1988<at>gmail<dot>com
 	GitHub: https://github.com/danielbrendel
 
 	Licence: Creative Commons Attribution-NoDerivatives 4.0 International
@@ -25,7 +25,7 @@ namespace dnyScriptParser {
 	#define DNY_PRODUCT_NAME L"dynScriptParser"
 	#define DNY_PRODUCT_VERSION L"0.1"
 	#define DNY_PRODUCT_AUTHOR L"Daniel Brendel"
-	#define DNY_PRODUCT_CONTACT L"dbrendel1988<at>yahoo<dot>com"
+	#define DNY_PRODUCT_CONTACT L"dbrendel1988<at>gmail<dot>com"
 	//Bracket start and end indices
 	#define DNY_BRACKET_START 0
 	#define DNY_BRACKET_END 1

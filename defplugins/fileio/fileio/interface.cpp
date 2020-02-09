@@ -5,7 +5,7 @@ plugininfo_s g_sPluginInfos = {
 	L"FileIO",
 	L"0.1",
 	L"Daniel Brendel",
-	L"dbrendel1988<at>yahoo<dot>com",
+	L"dbrendel1988<at>gmail<dot>com",
 	L"File I/O provider"
 };
 

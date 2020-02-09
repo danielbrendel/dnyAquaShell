@@ -161,7 +161,7 @@ plugininfo_s g_sPluginInfos = {
 	L"Miscutils",
 	L"0.1",
 	L"Daniel Brendel",
-	L"dbrendel1988<at>yahoo<dot>com",
+	L"dbrendel1988<at>gmail<dot>com",
 	L"Miscellaneous Utilities"
 };
 
