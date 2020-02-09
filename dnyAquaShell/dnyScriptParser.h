@@ -15,9 +15,9 @@
 
 	Version: 0.1
 	Contact: dbrendel1988<at>gmail<dot>com
-	GitHub: https://github.com/danielbrendel
+	GitHub: https://github.com/danielbrendel/
 
-	Licence: Creative Commons Attribution-NoDerivatives 4.0 International
+	The MIT License
 */
 
 namespace dnyScriptParser {
