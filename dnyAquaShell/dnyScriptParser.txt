@@ -1,13 +1,13 @@
 dnyScriptParser developed by Daniel Brendel
 ======================================
 
-(C) 2017-2018 by Daniel Brendel
+(C) 2017 - 2018 by Daniel Brendel
 
 Version: 0.1
 Contact: dbrendel1988<at>gmail<dot>com
 GitHub: https://github.com/danielbrendel/
 
-The MIT License
+Released under the MIT license
 
 Feature overview:
 *****************

@@ -9,7 +9,7 @@
 	Contact: dbrendel1988<at>gmail<dot>com
 	GitHub: https://github.com/danielbrendel/
 
-	The MIT License
+	Released under the MIT license
 */
 
 namespace dnyScriptParser {

@@ -6,7 +6,8 @@ dnyAquaShell developed by Daniel Brendel
 Version: 0.1
 Contact: dbrendel1988<at>gmail<dot>com
 GitHub: https://github.com/danielbrendel/
-The MIT License
+
+Released under the MIT license
 
 This tool is an extendable scripting shell for Windows using dnyScriptParser.
 The shell can be used either in interactive mode or just as a host for running
