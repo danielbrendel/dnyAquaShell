@@ -4,7 +4,7 @@
 
 **Version**: 0.1\
 **Contact**: dbrendel1988<at>gmail<dot>com\
-**GitHub**: https://github.com/danielbrendel/\
+**GitHub**: https://github.com/danielbrendel/
 
 Released under the MIT license
 
