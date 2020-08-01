@@ -1,7 +1,7 @@
 dnyScriptParser developed by Daniel Brendel
 ======================================
 
-(C) 2017 - 2018 by Daniel Brendel
+(C) 2017 - 2020 by Daniel Brendel
 
 Version: 0.1
 Contact: dbrendel1988<at>gmail<dot>com
@@ -106,7 +106,33 @@ set temp <= %arg1;
 result %temp;
 };
 
-5) Commands
+5) Defining classes
+Sometimes tasks should be bound to objects. dnyScript provides a basic class structure functionality.
+class ClassName {
+	method myTestMethod void()
+	{
+	};
+	
+	member myMember float;
+};
+You can define methods and variables similar to the global scope. Instead of using the keyword 'function' you use 
+'method'. And for member variables you use the keyword 'member'. Member variables are automatically allocated upon
+class instantiation and freed after the class instance gets removed from memory.
+You can also define a constructor and a destructor.
+class MyTestClass {
+	method construct void()
+	{
+		print "Constructor called";
+	};
+	
+	method destruct void()
+	{
+		print "Destructor called";
+	};
+};
+To access methods or members inside the class context you can use %this.
+
+6) Commands
 The script user can implement own script commands which can retrieve arguments
 and also return a value. 
 #A void command:
@@ -128,13 +154,16 @@ const constname consttype <= value; //Registers a constant with the given name, 
 declare varname vartype; //Registers a global variable with the associated type
 set varname <= value; //Assigns a value to a global/local variable
 undeclare varname; //Removes a global variable
-function name rettype(paramters) {code} //Defines a function
+function name rettype(paramters) {code}; //Defines a function
 local varname vartype; //Registers a local function variable inside a function with the associated type
 result value; //Sets the result value of the associated function
-call funcname(arguments) => resultvar //Calls a function with paramters (if required) and stores the result (if required)
-if (cond1, operation, cond2) {code} <elseif (cond1, operation, cond2) {code}> <else {code}> //Performs an if-elseif-else evaluation. Elseif's and else's are optional. 'operation' can either be -eq(equal), -nt(not equal), -ls(less than), -lse(less than or equal), -gr(greater than) and -gre(greater than or equal).
-for (varname, startvalue, endvalue, step) {code} //Performs a for-loop with positive or negative values (use -inc for 1 and -dec for -1 or a step value)
-while (cond1, operation, cond2) {code} //Performs a while-loop. 'operation' can either be -eq(equal), -nt(not equal), -ls(less than), -lse(less than or equal), -gr(greater than) and -gre(greater than or equal).
+call funcname(arguments) => resultvar; //Calls a function with paramters (if required) and stores the result (if required)
+if (cond1, operation, cond2) {code} <elseif (cond1, operation, cond2) {code}> <else {code}>; //Performs an if-elseif-else evaluation. Elseif's and else's are optional. 'operation' can either be -eq(equal), -nt(not equal), -ls(less than), -lse(less than or equal), -gr(greater than) and -gre(greater than or equal).
+for (varname, startvalue, endvalue, step) {code}; //Performs a for-loop with positive or negative values (use -inc for 1 and -dec for -1 or a step value)
+while (cond1, operation, cond2) {code}; //Performs a while-loop. 'operation' can either be -eq(equal), -nt(not equal), -ls(less than), -lse(less than or equal), -gr(greater than) and -gre(greater than or equal).
+class name { code }; //Define a class structure
+method name rettype(parameters) { code }; //Implement a class method 
+member name vartype; //Define a class member variable
 execute scriptfile; //Executes a script file relative to the base directory
 print text; //Prints text to the standard output if set by script user
 exit; //Aborts script execution

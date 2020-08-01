@@ -11,7 +11,7 @@
 /*
 	dnyScriptParser developed by Daniel Brendel
 
-	(C) 2017-2018 by Daniel Brendel
+	(C) 2017-2020 by Daniel Brendel
 
 	Version: 0.1
 	Contact: dbrendel1988<at>gmail<dot>com
@@ -749,6 +749,162 @@ namespace dnyScriptParser {
 		}
 	};
 
+	extern class CObjectMgr* pObjectManagerInstance;
+	class CObjectMgr { //Manager for objects
+		struct objinstance_s { //Data related to an object instance
+			std::wstring wszName;
+			std::vector<std::wstring> vMembers;
+			std::vector<std::wstring> vMethods;
+		};
+
+		struct object_s { //Data related to an object scheme
+			std::wstring wszName;
+			std::wstring wszBody;
+			std::vector<objinstance_s> vInstances;
+		};
+
+		struct idmap_s {
+			size_t map[2];
+
+			inline size_t operator[](int iIndex) const { return map[iIndex]; }
+			inline size_t& operator[](int iIndex) { return map[iIndex]; }
+		};
+
+		struct cvar_type_event_table_s {
+			CVarManager::TpfnDeclareVar pfnDeclareVar;
+			CVarManager::TpfnAssignVarValue pfnAssignVarValue;
+			CVarManager::TpfnGetReplacerString pfnGetReplacerString;
+			CVarManager::TpfnRemoveVar pfnRemoveVar;
+		};
+	private:
+		std::vector<object_s> m_vObjects;
+		objinstance_s* m_pCurrentInstance;
+		class CScriptingInterface* m_pInterface;
+		cvar_type_event_table_s m_sEventTable;
+
+		friend bool CTOBJ_DeclareVar(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar);
+		friend bool CTOBJ_AssignVarValue(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar, const CVarManager::ICustomVarValue& rCustomVarValue, bool bIsConst);
+		friend dnyString CTOBJ_GetReplacerString(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar);
+		friend void CTOBJ_RemoveVar(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar);
+
+		bool FindObject(const std::wstring& wszName, size_t* puiIdOut = nullptr)
+		{
+			//Find object scheme in list
+
+			for (size_t i = 0; i < this->m_vObjects.size(); i++) {
+				if (this->m_vObjects[i].wszName == wszName) {
+					if (puiIdOut)
+						*puiIdOut = i;
+
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		bool FindInstance(const std::wstring& wszName, idmap_s* pIdMap = nullptr)
+		{
+			//Find object instance from object 
+
+			for (size_t i = 0; i < this->m_vObjects.size(); i++) {
+				for (size_t j = 0; j < this->m_vObjects[i].vInstances.size(); j++) {
+					if (this->m_vObjects[i].vInstances[j].wszName == wszName) {
+						if (pIdMap) {
+							pIdMap->map[0] = i;
+							pIdMap->map[1] = j;
+						}
+
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		void Clear(void)
+		{
+			//Clear data
+
+			this->m_vObjects.clear();
+		}
+
+		std::wstring StrReplace(const std::wstring& wszStr, const std::wstring& wszToken, const std::wstring& wszNewStr)
+		{
+			//Replace all tokens in a string
+
+			std::wstring wszResult(wszStr);
+			size_t uiStrPos = wszResult.find(wszToken);
+
+			while (uiStrPos != std::wstring::npos) {
+				wszResult.replace(uiStrPos, wszToken.length(), wszNewStr);
+				uiStrPos = wszResult.find(wszToken);
+			}
+
+			return wszResult;
+		}
+
+		dnyScriptParser::CVarManager::cvartype_e TypeByName(const std::wstring& wszName)
+		{
+			//Get type indicator by string
+
+			dnyScriptParser::CVarManager::cvartype_e eResult = dnyScriptParser::CVarManager::cvartype_e::CT_UNKNOWN;
+
+			if (wszName == L"bool") {
+				eResult = dnyScriptParser::CVarManager::cvartype_e::CT_BOOL;
+			}
+			else if (wszName == L"int") {
+				eResult = dnyScriptParser::CVarManager::cvartype_e::CT_INT;
+			}
+			else if (wszName == L"float") {
+				eResult = dnyScriptParser::CVarManager::cvartype_e::CT_FLOAT;
+			}
+			else if (wszName == L"string") {
+				eResult = dnyScriptParser::CVarManager::cvartype_e::CT_STRING;
+			}
+
+			return eResult;
+		}
+
+		inline void Free(void)
+		{
+			//Cleanup resources
+
+			this->Clear();
+		}
+	public:
+		CObjectMgr(class CScriptingInterface* pInterface);
+		~CObjectMgr() { pObjectManagerInstance = nullptr; this->Free(); }
+
+		bool AddObject(const std::wstring& wszName, const std::wstring& wszBody)
+		{
+			//Add an object scheme to list
+
+			if ((!wszName.length()) || (!wszBody.length()))
+				return false;
+
+			//Check if name is already in use
+			if (this->FindObject(wszName))
+				return false;
+
+			//Setup data struct
+			object_s sObject;
+			sObject.wszName = wszName;
+			sObject.wszBody = wszBody;
+
+			//Add scheme data to list
+			this->m_vObjects.push_back(sObject);
+
+			return true;
+		}
+
+		bool AllocObject(const std::wstring& wszInstanceName, const std::wstring& wszObject);
+		bool AddMemberToCurrentObject(class ICodeContext* pCodeContext, void* pInterfaceObject);
+		bool AddMethodToCurrentObject(ICodeContext* pCodeContext, void* pInterfaceObject);
+		bool FreeObject(const std::wstring& wszInstanceName);
+	};
+
 	/* Code context container */
 
 	class ICodeContext {
@@ -1286,6 +1442,7 @@ namespace dnyScriptParser {
 		std::vector<size_t> m_vCurrentFunctionContexts;
 		functioncall_user_s m_sCurUserFunctionCall;
 		bool m_bContinueScriptExecution;
+		CObjectMgr* m_pObjectMgr;
 
 		//Function management methods
 
@@ -1835,7 +1992,7 @@ namespace dnyScriptParser {
 				pCvar = pLocalVar->pCVar;
 				eType = pLocalVar->eType;
 			}
-			
+
 			switch (eType) {
 			case CT_BOOL: {
 				ICVar<dnyBoolean>* pBoolVar = (ICVar<dnyBoolean>*)pCvar;
@@ -1956,6 +2113,40 @@ namespace dnyScriptParser {
 			}
 
 			return true;
+		);
+
+		INTERNAL_COMMAND_HANDLER_METHOD(CreateClassDefinition,
+			//Handle class registration
+
+			CHECK_VALID_ARGUMENT_COUNT(3);
+
+			return pThis->GetObjectMgr()->AddObject(pContext->GetPartString(1), pContext->GetPartString(2));
+		);
+
+		INTERNAL_COMMAND_HANDLER_METHOD(AddClassMember,
+			//Add class member
+
+			return pThis->GetObjectMgr()->AddMemberToCurrentObject(pContext, pThis);
+		);
+
+		INTERNAL_COMMAND_HANDLER_METHOD(AddClassMethod,
+			//Add class method
+
+			return pThis->GetObjectMgr()->AddMethodToCurrentObject(pContext, pThis);
+		);
+
+		INTERNAL_COMMAND_HANDLER_METHOD(AllocClassInstance,
+			//Allocate class instance
+
+			CHECK_VALID_ARGUMENT_COUNT(3);
+
+			return pThis->GetObjectMgr()->AllocObject(pContext->GetPartString(1), pContext->GetPartString(2));
+		);
+
+		INTERNAL_COMMAND_HANDLER_METHOD(FreeClassInstance,
+			//Free class instance
+
+			return pThis->GetObjectMgr()->FreeObject(pContext->GetPartString(1));
 		);
 
 		//Elseif handler insertion macro
@@ -2753,6 +2944,11 @@ namespace dnyScriptParser {
 			REG_INTERNAL_CMD(L"function", &oHandleFunctionRegistration);
 			REG_INTERNAL_CMD(L"local", &oHandleLocalVarRegistration);
 			REG_INTERNAL_CMD(L"call", &oHandleFunctionCall);
+			REG_INTERNAL_CMD(L"class", &oCreateClassDefinition);
+			REG_INTERNAL_CMD(L"member", &oAddClassMember);
+			REG_INTERNAL_CMD(L"method", &oAddClassMethod);
+			//REG_INTERNAL_CMD(L"class_alloc", &oAllocClassInstance);
+			//REG_INTERNAL_CMD(L"class_free", &oFreeClassInstance);
 			REG_INTERNAL_CMD(L"result", &oHandleFunctionResult);
 			REG_INTERNAL_CMD(L"if", &oHandleIfElseIfElseStatement);
 			REG_INTERNAL_CMD(L"for", &oHandleForLoop);
@@ -2775,9 +2971,10 @@ namespace dnyScriptParser {
 			return true;
 		}
 	public:
-		CScriptingInterface() { this->RegisterInternalCommands(); this->m_sCurUserFunctionCall.bIsValid = false; }
-		CScriptingInterface(const std::wstring& wszScriptDirectory, const TpfnStandardOutput pfnStandardOutput) : m_wszScriptDirectory(wszScriptDirectory), m_pfnStandardOutput(pfnStandardOutput) { this->RegisterInternalCommands(); this->m_sCurUserFunctionCall.bIsValid = false; }
-		~CScriptingInterface() {}
+		CScriptingInterface() { this->RegisterInternalCommands(); this->m_sCurUserFunctionCall.bIsValid = false; this->m_pObjectMgr = new CObjectMgr(this);  }
+		CScriptingInterface(const std::wstring& wszScriptDirectory, const TpfnStandardOutput pfnStandardOutput) : m_wszScriptDirectory(wszScriptDirectory), m_pfnStandardOutput(pfnStandardOutput) { this->RegisterInternalCommands(); this->m_sCurUserFunctionCall.bIsValid = false; this->m_pObjectMgr = new CObjectMgr(this);
+		}
+		~CScriptingInterface() { delete this->m_pObjectMgr; }
 
 		//Parsing interface methods
 
@@ -3120,5 +3317,6 @@ namespace dnyScriptParser {
 		cvarptr_t FindCurrentFunctionLocalVarPtr(const std::wstring& wszName) { size_t uiId; if (!this->FindLocalVariable(wszName, this->GetCurrentFunctionContext(), &uiId)) return nullptr; return this->m_vFunctions[this->GetCurrentFunctionContext()].vLocalVars[uiId].pCVar; }
 		bool RemoveLocalVarFromCurrentFunctionContext(const std::wstring& wszVarName) { return this->FreeLocalVariable(wszVarName, this->GetCurrentFunctionContext()); }
 		inline void AbortScriptExecution(void) { this->m_bContinueScriptExecution = false; }
+		class dnyScriptParser::CObjectMgr* GetObjectMgr(void) { return this->m_pObjectMgr; }
 	};
 }
