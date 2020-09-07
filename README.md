@@ -2,7 +2,7 @@
 
 (C) 2017-2020 by Daniel Brendel
 
-**Version**: 0.1\
+**Version**: 1.0\
 **Contact**: dbrendel1988<at>gmail<dot>com\
 **GitHub**: https://github.com/danielbrendel/
 
@@ -51,5 +51,5 @@ This software is using dnyScriptParser v0.1 developed by Daniel Brendel.
 Please refer to dnyScriptParser.txt for more details.
 
 ## Changelog:
-* Version 0.1:
+* Version 1.0:
 	* (Initial release)

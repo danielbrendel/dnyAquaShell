@@ -13,7 +13,7 @@
 
 	(C) 2017-2020 by Daniel Brendel
 
-	Version: 0.1
+	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
 	GitHub: https://github.com/danielbrendel/
 
@@ -23,7 +23,7 @@
 namespace dnyScriptParser {
 	//About information
 	#define DNY_PRODUCT_NAME L"dynScriptParser"
-	#define DNY_PRODUCT_VERSION L"0.1"
+	#define DNY_PRODUCT_VERSION L"1.0"
 	#define DNY_PRODUCT_AUTHOR L"Daniel Brendel"
 	#define DNY_PRODUCT_CONTACT L"dbrendel1988<at>gmail<dot>com"
 	//Bracket start and end indices

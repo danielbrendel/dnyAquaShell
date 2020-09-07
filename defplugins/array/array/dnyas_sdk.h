@@ -5,7 +5,7 @@
 
 	(C) 2017 by Daniel Brendel
 
-	Version: 0.1
+	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
 	GitHub: https://github.com/danielbrendel/
 
@@ -19,7 +19,7 @@
 #include <vector>
 #include <Windows.h>
 
-#define DNY_AS_PRODUCT_VERSION_W MAKEWORD(0, 1)
+#define DNY_AS_PRODUCT_VERSION_W MAKEWORD(1, 0)
 
 typedef WORD dnyVersionInfo;
 

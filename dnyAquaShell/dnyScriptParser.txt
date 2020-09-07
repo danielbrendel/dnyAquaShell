@@ -3,7 +3,7 @@ dnyScriptParser developed by Daniel Brendel
 
 (C) 2017 - 2020 by Daniel Brendel
 
-Version: 0.1
+Version: 1.0
 Contact: dbrendel1988<at>gmail<dot>com
 GitHub: https://github.com/danielbrendel/
 
@@ -92,7 +92,7 @@ result 0.1;
 function myComplexFunction int(arg1 string, arg2 float, arg3 bool)
 {
 result 0;
-}
+};
 The functions are called as follows:
 call myVoidFunction();
 call myFloatFunction() => myFloatVar;
@@ -203,5 +203,5 @@ System requirements:
 
 Changelog:
 **********
-# Version 0.1:
+# Version 1.0:
 	+ (Initial release)
