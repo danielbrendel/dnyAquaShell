@@ -3,7 +3,7 @@
 /*
 	dnyAquaShell developed by Daniel Brendel
 
-	(C) 2017 by Daniel Brendel
+	(C) 2017-2020 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
