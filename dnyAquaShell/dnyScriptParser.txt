@@ -1,5 +1,5 @@
 dnyScriptParser developed by Daniel Brendel
-======================================
+===========================================
 
 (C) 2017 - 2020 by Daniel Brendel
 
