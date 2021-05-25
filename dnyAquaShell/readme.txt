@@ -1,7 +1,7 @@
 dnyAquaShell developed by Daniel Brendel
 ===================================
 
-(C) 2017-2020 by Daniel Brendel
+(C) 2017-2021 by Daniel Brendel
 
 Version: 1.0
 Contact: dbrendel1988<at>gmail<dot>com
@@ -16,8 +16,6 @@ DLL plugins.
 
 Basic commands:
 ***************
-- shelldoc # Shows the shell documentation file
-- scriptdoc # Shows the script parser documentation file
 - require # Attempts to load a plugin library. Only needed when not running in interactive mode
 - exec <scriptfile> # Executes a script file
 - sys <string> # Passes the string to the Windows batch system

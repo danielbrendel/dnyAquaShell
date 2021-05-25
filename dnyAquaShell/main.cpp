@@ -7,7 +7,7 @@
 /*
 	dnyAquaShell developed by Daniel Brendel
 
-	(C) 2017-2020 by Daniel Brendel
+	(C) 2017-2021 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
@@ -43,6 +43,8 @@ namespace ShellInterface {
 
 		return converterX.to_bytes(wstr);
 	}
+
+	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
 
 	class CShellInterface { //Shell interface manager
 	private:
@@ -246,26 +248,6 @@ namespace ShellInterface {
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance) = 0;
 		};
 
-		class IShellReadmeCommandInterface : public IBaseReadmeCommandInterface {
-		public:
-			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
-			{
-				dnyScriptParser::ICodeContext* pContext = (dnyScriptParser::ICodeContext*)pCodeContext;
-
-				return this->ShowResource(ID_SHELL_README);
-			}
-		} m_oShellReadmeCommand;
-
-		class IScriptParserReadmeCommandInterface : public IBaseReadmeCommandInterface {
-		public:
-			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
-			{
-				dnyScriptParser::ICodeContext* pContext = (dnyScriptParser::ICodeContext*)pCodeContext;
-
-				return this->ShowResource(ID_SCRIPTPARSER_README);
-			}
-		} m_oScriptParserReadmeCommand;
-
 		class IRequireCommandInterface : public dnyScriptParser::CCommandManager::IVoidCommandInterface {
 		public:
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
@@ -409,8 +391,6 @@ namespace ShellInterface {
 
 			//Add further commands
 			#define SI_ADD_COMMAND(name, obj, type) if (!this->m_pScriptInt->RegisterCommand(name, obj, type)) { this->Free(); return false; }
-			SI_ADD_COMMAND(L"shelldoc", &m_oShellReadmeCommand, dnyScriptParser::CVarManager::CT_VOID);
-			SI_ADD_COMMAND(L"scriptdoc", &m_oScriptParserReadmeCommand, dnyScriptParser::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"require", &m_oRequireCommand, dnyScriptParser::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"exec", &m_oExecCommand, dnyScriptParser::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"sys", &m_oSysCommand, dnyScriptParser::CVarManager::CT_VOID);

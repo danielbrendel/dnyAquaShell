@@ -3,7 +3,7 @@
 /*
 	dnyScriptParser developed by Daniel Brendel
 
-	(C) 2017-2020 by Daniel Brendel
+	(C) 2017 - 2021 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
@@ -79,6 +79,7 @@ namespace dnyScriptParser {
 
 		this->m_pInterface->RegisterDataType(L"class", (CVarManager::custom_cvar_type_s::cvar_type_event_table_s*) & this->m_sEventTable);
 	}
+
 	bool CObjectMgr::AllocObject(const std::wstring& wszInstanceName, const std::wstring& wszObject)
 	{
 		//Allocate an instance of an object
@@ -106,7 +107,7 @@ namespace dnyScriptParser {
 		this->m_pCurrentInstance = &this->m_vObjects[uiObjId].vInstances[this->m_vObjects[uiObjId].vInstances.size() - 1];
 
 		//Replace all this accessor tokens with object instance name token
-		this->m_vObjects[uiObjId].wszBody = this->StrReplace(this->m_vObjects[uiObjId].wszBody, L"%this.", wszInstanceName + L".");
+		this->m_vObjects[uiObjId].wszBody = this->StrReplace(this->m_vObjects[uiObjId].wszBody, L"%this.", std::wstring(&wszInstanceName[1]) + L".");
 
 		//Execute body code in order to add members and methods
 		this->m_pInterface->ExecuteCode(this->m_vObjects[uiObjId].wszBody);
@@ -131,8 +132,8 @@ namespace dnyScriptParser {
 		pCodeContext->ReplaceAllVariables(pInterfaceObject);
 
 		//Setup member variable name string with object instance name
-		std::wstring wszVarName = this->m_pCurrentInstance->wszName + L"." + pCodeContext->GetPartString(1);
-
+		std::wstring wszVarName = std::wstring(&this->m_pCurrentInstance->wszName[1]) + L"." + pCodeContext->GetPartString(1);
+		
 		//Attempt to register member variable
 		dnyScriptParser::CVarManager::cvarptr_t pCVar = this->m_pInterface->RegisterCVar(wszVarName, this->TypeByName(pCodeContext->GetPartString(2)), false, false);
 		if (!pCVar)
@@ -196,14 +197,14 @@ namespace dnyScriptParser {
 		return true;
 	}
 
-	bool CTOBJ_DeclareVar(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar)
+	bool CTOBJ_DeclareVar(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar)
 	{
 		//Declare class variable
 
 		return true;
 	}
 
-	bool CTOBJ_AssignVarValue(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar, const CVarManager::ICustomVarValue& rCustomVarValue, bool bIsConst)
+	bool CTOBJ_AssignVarValue(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar, const CVarManager::ICustomVarValue& rCustomVarValue, bool bIsConst)
 	{
 		//Allocate class object
 
@@ -213,14 +214,14 @@ namespace dnyScriptParser {
 		return pObjectManagerInstance->AllocObject(wszName, rCustomVarValue.QueryAsDnyString());
 	}
 
-	dnyString CTOBJ_GetReplacerString(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar)
+	dnyString CTOBJ_GetReplacerString(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar)
 	{
 		//Return replacer string
 
 		return wszName;
 	}
 
-	void CTOBJ_RemoveVar(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar)
+	void CTOBJ_RemoveVar(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar)
 	{
 		//Free class instance
 

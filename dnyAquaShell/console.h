@@ -3,7 +3,7 @@
 /*
 	dnyAquaShell developed by Daniel Brendel
 
-	(C) 2017-2020 by Daniel Brendel
+	(C) 2017-2021 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
@@ -66,11 +66,11 @@ namespace Console {
 			this->SetDefaultColor();
 
 			//Print info text
-			std::wcout << L"=============================================================================" << std::endl;
+			std::wcout << L"==============================================================" << std::endl;
 			std::wcout << L"* " DNY_AS_PRODUCT_NAME L" v" DNY_AS_PRODUCT_VERSION << std::endl;
 			std::wcout << L"* Developed by " DNY_AS_PRODUCT_AUTHOR L" (" DNY_AS_PRODUCT_CONTACT L")" << std::endl;
 			std::wcout << L"* Released under " DNY_AS_PRODUCT_LICENCE << std::endl;
-			std::wcout << L"=============================================================================" << std::endl << std::endl;
+			std::wcout << L"==============================================================" << std::endl << std::endl;
 
 			return this->m_bReady = true;
 		}

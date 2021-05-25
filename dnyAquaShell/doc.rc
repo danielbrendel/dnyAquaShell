@@ -1,4 +1,0 @@
-#include "resource.h"
-
-ID_SHELL_README TEXTFILE "readme.txt"
-ID_SCRIPTPARSER_README TEXTFILE "dnyScriptParser.txt"

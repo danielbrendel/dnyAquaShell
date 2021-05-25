@@ -11,7 +11,7 @@
 /*
 	dnyScriptParser developed by Daniel Brendel
 
-	(C) 2017-2020 by Daniel Brendel
+	(C) 2017 - 2021 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
@@ -38,18 +38,18 @@ namespace dnyScriptParser {
 	typedef __int64 dnyInteger;
 	typedef double dnyFloat;
 	typedef std::wstring dnyString;
-	typedef std::wstring dnycustom;
+	typedef std::wstring dnyCustom;
 
 	//Syntax relevant characters
-	const wchar_t dnycommentChar = '#';
+	const wchar_t dnyCommentChar = '#';
 	const wchar_t dnySpaceCharacter = ' ';
 	const wchar_t dnyTabCharacter = '\t';
 	const wchar_t dnyVariableEntrance = '%';
 	const wchar_t dnyFuncCallEntrance = '$';
 	const wchar_t dnyListSeparator = ',';
-	const wchar_t dnycodeContextDelimiter = ';';
+	const wchar_t dnyCodeContextDelimiter = ';';
 	const wchar_t dnyArgumentContainer[] = { '(', ')' };
-	const wchar_t dnycodeContainer[] = { '{', '}' };
+	const wchar_t dnyCodeContainer[] = { '{', '}' };
 
 	/* About functions */
 
@@ -184,10 +184,10 @@ namespace dnyScriptParser {
 			const void* QueryAsUnknown(void) { return this->m_wszExpression.data(); }
 		};
 
-		typedef bool(*TpfnDeclareVar)(const std::wstring& wszName, ICVar<dnycustom>* pCVar);
-		typedef bool(*TpfnAssignVarValue)(const std::wstring& wszName, ICVar<dnycustom>* pCVar, const ICustomVarValue& rCustomVarValue, bool bIsConst);
-		typedef dnyString(*TpfnGetReplacerString)(const std::wstring& wszName, ICVar<dnycustom>* pCVar);
-		typedef void(*TpfnRemoveVar)(const std::wstring& wszName, ICVar<dnycustom>* pCVar);
+		typedef bool(*TpfnDeclareVar)(const std::wstring& wszName, ICVar<dnyCustom>* pCVar);
+		typedef bool(*TpfnAssignVarValue)(const std::wstring& wszName, ICVar<dnyCustom>* pCVar, const ICustomVarValue& rCustomVarValue, bool bIsConst);
+		typedef dnyString(*TpfnGetReplacerString)(const std::wstring& wszName, ICVar<dnyCustom>* pCVar);
+		typedef void(*TpfnRemoveVar)(const std::wstring& wszName, ICVar<dnyCustom>* pCVar);
 		struct custom_cvar_type_s {
 			std::wstring wszName;
 			struct cvar_type_event_table_s {
@@ -330,12 +330,12 @@ namespace dnyScriptParser {
 				return nullptr;
 
 			//Allocate memory for cvar and instantiate class object according to type
-			pCVar = new ICVar<dnycustom>(CT_CUSTOM, bConst);
+			pCVar = new ICVar<dnyCustom>(CT_CUSTOM, bConst);
 			if (!pCVar)
 				return nullptr;
 
 			//Call init function
-			if (!this->m_vDataTypes[uiCvarTypeId].sEventTable.pfnDeclareVar(wszName, (ICVar<dnycustom>*)pCVar)) {
+			if (!this->m_vDataTypes[uiCvarTypeId].sEventTable.pfnDeclareVar(wszName, (dnyScriptParser::CVarManager::ICVar<dnyCustom>*)pCVar)) {
 				delete pCVar;
 				return nullptr;
 			}
@@ -395,7 +395,7 @@ namespace dnyScriptParser {
 			//Spawn custom CVar object
 			cvarptr_t pCVar = this->SpawnCustomCVar(wszName, wszType, bConst);
 			if (!pCVar)
-				return false;
+				return nullptr;
 			
 			//Allocate cvar memory and set data
 
@@ -430,7 +430,7 @@ namespace dnyScriptParser {
 				return false;
 
 			//Setup approbriate accessor pointer
-			ICVar<dnycustom>* pCVar = (ICVar<dnycustom>*)this->m_vCVars[uiCVarId]->pcvar;
+			ICVar<dnyCustom>* pCVar = (ICVar<dnyCustom>*)this->m_vCVars[uiCVarId]->pcvar;
 			if (!pCVar)
 				return false;
 
@@ -443,10 +443,10 @@ namespace dnyScriptParser {
 			ICustomVarValue oCustomVarValue(wszExpression);
 
 			//Call related function
-			return this->m_vDataTypes[uiCVarDataType].sEventTable.pfnAssignVarValue(wszName, (ICVar<dnycustom>*)this->m_vCVars[uiCVarId]->pcvar, oCustomVarValue, this->m_vCVars[uiCVarId]->bConst);
+			return this->m_vDataTypes[uiCVarDataType].sEventTable.pfnAssignVarValue(wszName, (dnyScriptParser::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[uiCVarId]->pcvar, oCustomVarValue, this->m_vCVars[uiCVarId]->bConst);
 		}
 
-		bool AssignCustomVar(ICVar<dnycustom>* pCustomVar, const std::wstring& wszTypeName, const std::wstring& wszExpression)
+		bool AssignCustomVar(dnyScriptParser::CVarManager::ICVar<dnyCustom>* pCustomVar, const std::wstring& wszTypeName, const std::wstring& wszExpression)
 		{
 			//Assign custom variable value
 
@@ -523,7 +523,7 @@ namespace dnyScriptParser {
 					if (this->m_vCVars[i]->wszCustom.length()) {
 						size_t uiId;
 						if (this->FindDataType(this->m_vCVars[i]->wszCustom, &uiId)) {
-							this->m_vDataTypes[uiId].sEventTable.pfnRemoveVar(this->m_vCVars[i]->wszName, (ICVar<dnycustom>*)this->m_vCVars[i]->pcvar);
+							this->m_vDataTypes[uiId].sEventTable.pfnRemoveVar(this->m_vCVars[i]->wszName, (dnyScriptParser::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[i]->pcvar);
 						}
 					}
 
@@ -554,8 +554,8 @@ namespace dnyScriptParser {
 			//Iterate thorugh all variable items
 			for (size_t i = 0; i < this->m_vCVars.size(); i++) {
 				//Ignore command result variables
-				if (this->m_vCVars[i]->wszName[0] == '$') continue;
-
+				if ((this->m_vCVars[i]->wszName[0] == '$') || (this->m_vCVars[i]->wszName[0] == '@')) continue;
+				
 				//Attempt to find all occurences of variable name with prefix as substring
 				size_t uiSubstrPos = wszResult.find(std::wstring(wcsVarDerefIdent) + this->m_vCVars[i]->wszName);
 				while (uiSubstrPos != std::wstring::npos) {
@@ -584,8 +584,8 @@ namespace dnyScriptParser {
 					}
 					case CT_CUSTOM: {
 						size_t uiItemId;
-						if (!this->FindDataType(this->m_vCVars[i]->wszCustom, &uiItemId)) return false;
-						wszReplacerString = this->m_vDataTypes[uiItemId].sEventTable.pfnGetReplacerString(this->m_vCVars[i]->wszName, (ICVar<dnycustom>*)this->m_vCVars[i]->pcvar);
+						if (!this->FindDataType(this->m_vCVars[i]->wszCustom, &uiItemId)) return L"";
+						wszReplacerString = this->m_vDataTypes[uiItemId].sEventTable.pfnGetReplacerString(this->m_vCVars[i]->wszName, (dnyScriptParser::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[i]->pcvar);
 						break;
 					}
 					default:
@@ -782,10 +782,10 @@ namespace dnyScriptParser {
 		class CScriptingInterface* m_pInterface;
 		cvar_type_event_table_s m_sEventTable;
 
-		friend bool CTOBJ_DeclareVar(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar);
-		friend bool CTOBJ_AssignVarValue(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar, const CVarManager::ICustomVarValue& rCustomVarValue, bool bIsConst);
-		friend dnyString CTOBJ_GetReplacerString(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar);
-		friend void CTOBJ_RemoveVar(const std::wstring& wszName, CVarManager::ICVar<dnycustom>* pCVar);
+		friend bool CTOBJ_DeclareVar(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar);
+		friend bool CTOBJ_AssignVarValue(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar, const CVarManager::ICustomVarValue& rCustomVarValue, bool bIsConst);
+		friend dnyString CTOBJ_GetReplacerString(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar);
+		friend void CTOBJ_RemoveVar(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar);
 
 		bool FindObject(const std::wstring& wszName, size_t* puiIdOut = nullptr)
 		{
@@ -1001,13 +1001,13 @@ namespace dnyScriptParser {
 
 			//Check for previous split char
 			if (uiCurrentIndex > 0) {
-				if ((wszString[uiCurrentIndex - 1] == dnycodeContainer[DNY_BRACKET_END]) || (wszString[uiCurrentIndex - 1] == dnyArgumentContainer[DNY_BRACKET_END]) || (wszString[uiCurrentIndex - 1] == dnycodeContextDelimiter))
+				if ((wszString[uiCurrentIndex - 1] == dnyCodeContainer[DNY_BRACKET_END]) || (wszString[uiCurrentIndex - 1] == dnyArgumentContainer[DNY_BRACKET_END]) || (wszString[uiCurrentIndex - 1] == dnyCodeContextDelimiter))
 					return false;
 			}
 
 			//Check for following split char
 			if (uiCurrentIndex + 1 < uiMaxSize) {
-				if ((wszString[uiCurrentIndex + 1] == dnycodeContainer[DNY_BRACKET_START]) || (wszString[uiCurrentIndex + 1] == dnyArgumentContainer[DNY_BRACKET_START]) || (wszString[uiCurrentIndex + 1] == dnycodeContextDelimiter))
+				if ((wszString[uiCurrentIndex + 1] == dnyCodeContainer[DNY_BRACKET_START]) || (wszString[uiCurrentIndex + 1] == dnyArgumentContainer[DNY_BRACKET_START]) || (wszString[uiCurrentIndex + 1] == dnyCodeContextDelimiter))
 					return false;
 			}
 
@@ -1026,7 +1026,7 @@ namespace dnyScriptParser {
 				return false;
 
 			//Static array with all split chars
-			static wchar_t wcaSplitChars[] = { dnySpaceCharacter, dnyTabCharacter, dnycodeContainer[DNY_BRACKET_START], dnyArgumentContainer[DNY_BRACKET_START] };
+			static wchar_t wcaSplitChars[] = { dnySpaceCharacter, dnyTabCharacter, dnyCodeContainer[DNY_BRACKET_START], dnyArgumentContainer[DNY_BRACKET_START] };
 		
 			for (size_t i = 0; i < (sizeof(wcaSplitChars) / sizeof(wchar_t)) - 2; i++) { //First loop for current char
 				for (size_t j = 0; j < sizeof(wcaSplitChars) / sizeof(wchar_t); j++) { //Second loop for next char
@@ -1057,6 +1057,7 @@ namespace dnyScriptParser {
 			ICodeContext oCurrentCodeContext;
 			std::wstring wszCurrentExpression = L"";
 			bool bInQuotes = false;
+			bool bHadArgumentContainer = false;
 			size_t uiArgContCounter = 0;
 			size_t uiCodeContCounter = 0;
 
@@ -1080,7 +1081,7 @@ namespace dnyScriptParser {
 				//Further stuff is only handled if not in quotes by start
 				if (!bInQuotes) {
 					//Break on comments
-					if (wszExpression[i] == dnycommentChar)
+					if (wszExpression[i] == dnyCommentChar)
 						break;
 
 					//Filter superficial split characters
@@ -1088,33 +1089,37 @@ namespace dnyScriptParser {
 						continue;
 
 					//Handle code containing brackets
-					if (wszExpression[i] == dnycodeContainer[DNY_BRACKET_START]) {
+					if (wszExpression[i] == dnyCodeContainer[DNY_BRACKET_START]) {
 						//Increase for each same bracket start character
 						uiCodeContCounter++;
-
+						
 						//Ignore copying only for the first one
 						if (uiCodeContCounter == 1) {
 							//Check for split for the first bracket start
-							if ((this->ShouldSplitOnChar(wszExpression, dnycodeContainer[DNY_BRACKET_START], i, wszExpression.length()))) {
+							if ((!bHadArgumentContainer) && (this->ShouldSplitOnChar(wszExpression, dnyCodeContainer[DNY_BRACKET_START], i, wszExpression.length()))) {
 								oCurrentCodeContext.AddPart(wszCurrentExpression);
 								wszCurrentExpression.clear();
 							}
 
 							continue;
 						}
-					} else if (wszExpression[i] == dnycodeContainer[DNY_BRACKET_END]) {
+					} else if (wszExpression[i] == dnyCodeContainer[DNY_BRACKET_END]) {
 						//Decrease for each same bracket start character
 						uiCodeContCounter--;
 
+						//Clear for next expressions
+						bHadArgumentContainer = false;
+						
 						//Split if end of bracket area is reached
 						if (uiCodeContCounter == 0) {
 							oCurrentCodeContext.AddPart(wszCurrentExpression);
 							wszCurrentExpression.clear();
 
-							//Handle if next char is a spacing char
+							//Handle if next chars are spacing chars
 							if (i + 1 < wszExpression.length()) {
-								if ((wszExpression[i + 1] == dnySpaceCharacter) || (wszExpression[i + 1] == dnyTabCharacter))
+								while ((i + 1 < wszExpression.length()) && ((wszExpression[i + 1] == dnySpaceCharacter) || (wszExpression[i + 1] == dnyTabCharacter))) {
 									i++;
+								}
 							}
 
 							continue;
@@ -1138,17 +1143,21 @@ namespace dnyScriptParser {
 							//Decrease for each same bracket start character
 							uiArgContCounter--;
 
+							//Indicate that an argument container ended
+							bHadArgumentContainer = true;
+
 							//Split if end of bracket area is reached
 							if (uiArgContCounter == 0) {
 								oCurrentCodeContext.AddPart(wszCurrentExpression);
 								wszCurrentExpression.clear();
 
-								//Handle if next char is a spacing char
+								//Handle if next chars are spacing chars
 								if (i + 1 < wszExpression.length()) {
-									if ((wszExpression[i + 1] == dnySpaceCharacter) || (wszExpression[i + 1] == dnyTabCharacter))
+									while ((i + 1 < wszExpression.length()) && ((wszExpression[i + 1] == dnySpaceCharacter) || (wszExpression[i + 1] == dnyTabCharacter))) {
 										i++;
+									}
 								}
-
+								
 								continue;
 							}
 						}
@@ -1169,14 +1178,15 @@ namespace dnyScriptParser {
 						continue;
 					}
 					//Handle code context split by delimiter character
-					else if (wszExpression[i] == dnycodeContextDelimiter) {
+					else if (wszExpression[i] == dnyCodeContextDelimiter) {
 						//Add last part to context container (if required) and, context container to list and then clear temporary buffers
-						if (this->ShouldSplitOnChar(wszExpression, dnycodeContextDelimiter, i, wszExpression.length())) {
+						if (this->ShouldSplitOnChar(wszExpression, dnyCodeContextDelimiter, i, wszExpression.length())) {
 							oCurrentCodeContext.AddPart(wszCurrentExpression);
 						}
 						this->m_vBlocks.push_back(oCurrentCodeContext);
 						oCurrentCodeContext.Clear();
 						wszCurrentExpression.clear();
+						bHadArgumentContainer = false;
 						continue;
 					}
 				}
@@ -1238,7 +1248,7 @@ namespace dnyScriptParser {
 						continue;
 
 					//Break on comments
-					if (wszLine[i] == dnycommentChar)
+					if (wszLine[i] == dnyCommentChar)
 						break;
 				}
 
@@ -1590,13 +1600,13 @@ namespace dnyScriptParser {
 					return false;
 				}
 			}
-
+			
 			//Add current function context
 			this->m_vCurrentFunctionContexts.push_back(uiFuncListId);
 
 			//Execute code with replaced variable values
 			bool bResult = this->ExecuteCode(this->ReplaceVariables(this->m_vFunctions[uiFuncListId].wszFuncCode));
-
+			
 			//Query result var if required and save value
 			if (pResultVar != nullptr) {
 				switch (this->m_vFunctions[uiFuncListId].eResVarType) {
@@ -1621,14 +1631,14 @@ namespace dnyScriptParser {
 					break;
 				}
 				case CT_CUSTOM: {
-					this->AssignCustomVar(wszName, ((ICVar<dnycustom>*)(this->m_vFunctions[uiFuncListId].pCVar))->GetValue());
+					this->AssignCustomVar(wszName, ((ICVar<dnyCustom>*)(this->m_vFunctions[uiFuncListId].pCVar))->GetValue());
 					break;
 				}
 				default:
 					return false;
 				}
 			}
-
+			
 			//Free result and argument variables
 			this->FreeFunctionVars(uiFuncListId);
 
@@ -1768,7 +1778,7 @@ namespace dnyScriptParser {
 					case CT_CUSTOM: {
 						custom_cvar_type_s* pCustomCVarDataType = this->GetDatatypeObjectData(this->m_vFunctions[uiFunctionId].vLocalVars[i].wszType);
 						if (!pCustomCVarDataType) return wszResult;
-						wszReplacerString = pCustomCVarDataType->sEventTable.pfnGetReplacerString(this->m_vFunctions[uiFunctionId].vLocalVars[i].wszName, (ICVar<dnycustom>*)this->m_vFunctions[uiFunctionId].vLocalVars[i].pCVar);
+						wszReplacerString = pCustomCVarDataType->sEventTable.pfnGetReplacerString(this->m_vFunctions[uiFunctionId].vLocalVars[i].wszName, (ICVar<dnyCustom>*)this->m_vFunctions[uiFunctionId].vLocalVars[i].pCVar);
 						break;
 					}
 					default:
@@ -1963,21 +1973,23 @@ namespace dnyScriptParser {
 			if (eType == CT_UNKNOWN)
 				return false;
 
-			return (eType != CT_CUSTOM) ? pThis->RegisterCVar(pContext->GetPartData(1), eType, false, false) != nullptr : pThis->RegisterCustomCVar(pContext->GetPartData(1), pContext->GetPartData(2), false, false) != nullptr;
+			std::wstring wszVarName = (pContext->GetPartData(2) != L"class") ? pContext->GetPartData(1) : L"@" + pContext->GetPartData(1) ;
+
+			return (eType != CT_CUSTOM) ? pThis->RegisterCVar(wszVarName, eType, false, false) != nullptr : pThis->RegisterCustomCVar(wszVarName, pContext->GetPartData(2), false, false) != nullptr;
 		);
 
 		INTERNAL_COMMAND_HANDLER_METHOD(HandleVariableAssignment, 
 			//Handle variable assignment
-
+			
 			CHECK_VALID_ARGUMENT_COUNT(4);
-
+			
 			std::wstring wszVarName = pThis->ReplaceAllVariables(pContext->GetPartData(1));
 			std::wstring wszVarAllocator = pContext->GetPartData(2);
 			std::wstring wszVarValue = pThis->ReplaceAllVariables(pContext->GetPartData(3));
 
 			if (wszVarAllocator != L"<=")
 				return false;
-
+			
 			cvartype_e eType = CT_UNKNOWN;
 			cvarptr_t pCvar = nullptr;
 
@@ -1992,7 +2004,7 @@ namespace dnyScriptParser {
 				pCvar = pLocalVar->pCVar;
 				eType = pLocalVar->eType;
 			}
-
+			
 			switch (eType) {
 			case CT_BOOL: {
 				ICVar<dnyBoolean>* pBoolVar = (ICVar<dnyBoolean>*)pCvar;
@@ -2025,7 +2037,7 @@ namespace dnyScriptParser {
 			default:
 				return false;
 			}
-
+	
 			return true;
 		);
 
@@ -2105,7 +2117,7 @@ namespace dnyScriptParser {
 				break;
 			}
 			case CT_CUSTOM: {
-				pThis->AssignCustomVar((CVarManager::ICVar<dnycustom>*)pThis->GetCurrentFunctionResultVarPtr(), pThis->GetCurrentFunctionResultVarTypeName(), pThis->ReplaceAllVariables(pContext->GetPartData(1)));
+				pThis->AssignCustomVar((CVarManager::ICVar<dnyCustom>*)pThis->GetCurrentFunctionResultVarPtr(), pThis->GetCurrentFunctionResultVarTypeName(), pThis->ReplaceAllVariables(pContext->GetPartData(1)));
 				break;
 			}
 			default:
@@ -3278,7 +3290,7 @@ namespace dnyScriptParser {
 			//Query function result: string
 
 			if (!this->m_sCurUserFunctionCall.bIsValid)
-				return false;
+				return L"";
 
 			CVarManager::ICVar<dnyString>* pVar = (CVarManager::ICVar<dnyString>*)this->m_sCurUserFunctionCall.pResultVar;
 			return pVar->GetValue();
@@ -3319,4 +3331,9 @@ namespace dnyScriptParser {
 		inline void AbortScriptExecution(void) { this->m_bContinueScriptExecution = false; }
 		class dnyScriptParser::CObjectMgr* GetObjectMgr(void) { return this->m_pObjectMgr; }
 	};
+
+	bool CTOBJ_DeclareVar(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar);
+	bool CTOBJ_AssignVarValue(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar, const CVarManager::ICustomVarValue& rCustomVarValue, bool bIsConst);
+	dnyString CTOBJ_GetReplacerString(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar);
+	void CTOBJ_RemoveVar(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar);
 }

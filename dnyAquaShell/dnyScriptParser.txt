@@ -1,10 +1,10 @@
 dnyScriptParser developed by Daniel Brendel
 ===========================================
 
-(C) 2017 - 2020 by Daniel Brendel
+(C) 2017 - 2021 by Daniel Brendel
 
 Version: 1.0
-Contact: dbrendel1988<at>gmail<dot>com
+Contact: dbrendel1988(at)gmail(dot)com
 GitHub: https://github.com/danielbrendel/
 
 Released under the MIT license
@@ -13,7 +13,7 @@ Feature overview:
 *****************
 + Scripting Engine for application-embedded scripting
 + User-friendly scripting syntax
-+ Interface between script engine and engine user (data, code)
++ Interface between script engine and engine user
 + Default internal commands
 + Sticks to C++ STD in order to provide compatibility
  
@@ -143,6 +143,14 @@ class MyTestClass {
 };
 
 To access methods or members inside the class context you can use %this.
+When accessing the class instance from outside you must prefix the class 
+instance identifier with an @ character except when accessing member variables.
+
+declare classInstance class;
+set @classInstance <= MyTestClass;
+call @classInstance.SomeMethod() => void;
+set someVariable <= "%classInstance.MyVariable";
+undeclare @classInstance;
 
 6) Commands
 The script user can implement own script commands which can retrieve arguments
@@ -203,7 +211,7 @@ Usage:
   dnyDataType)> interface for commands that return a value.
 - Execute scripts via ExecuteScript() method or code via ExecuteCode() method
 - Use the methods BeginFunctionCall(), ExecuteFunction() and EndFunctionCall() to call a 
-  script function. If required you can push functions via the PushFunctionParam() methods
+  script function. If required you can push arguments via the PushFunctionParam() methods
   and query function result data via the QueryFunctionResultAs*() methods.
 - Possible operation status values can be obtained via GetErrorInformation() method. It returns
   a class object instance which can be used to query the operation status code and an additional
