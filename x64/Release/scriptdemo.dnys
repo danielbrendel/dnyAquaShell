@@ -1,4 +1,4 @@
-#dnyScriptParser demo script file
+#dnyScriptInterpreter demo script file
 
 require "demo";
 

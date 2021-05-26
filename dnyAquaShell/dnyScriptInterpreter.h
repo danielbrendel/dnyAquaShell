@@ -9,7 +9,7 @@
 #include <sstream>
 
 /*
-	dnyScriptParser developed by Daniel Brendel
+	dnyScriptInterpreter developed by Daniel Brendel
 
 	(C) 2017 - 2021 by Daniel Brendel
 
@@ -20,9 +20,9 @@
 	Released under the MIT license
 */
 
-namespace dnyScriptParser {
+namespace dnyScriptInterpreter {
 	//About information
-	#define DNY_PRODUCT_NAME L"dynScriptParser"
+	#define DNY_PRODUCT_NAME L"dnyScriptInterpreter"
 	#define DNY_PRODUCT_VERSION L"1.0"
 	#define DNY_PRODUCT_AUTHOR L"Daniel Brendel"
 	#define DNY_PRODUCT_CONTACT L"dbrendel1988<at>gmail<dot>com"
@@ -335,7 +335,7 @@ namespace dnyScriptParser {
 				return nullptr;
 
 			//Call init function
-			if (!this->m_vDataTypes[uiCvarTypeId].sEventTable.pfnDeclareVar(wszName, (dnyScriptParser::CVarManager::ICVar<dnyCustom>*)pCVar)) {
+			if (!this->m_vDataTypes[uiCvarTypeId].sEventTable.pfnDeclareVar(wszName, (dnyScriptInterpreter::CVarManager::ICVar<dnyCustom>*)pCVar)) {
 				delete pCVar;
 				return nullptr;
 			}
@@ -443,10 +443,10 @@ namespace dnyScriptParser {
 			ICustomVarValue oCustomVarValue(wszExpression);
 
 			//Call related function
-			return this->m_vDataTypes[uiCVarDataType].sEventTable.pfnAssignVarValue(wszName, (dnyScriptParser::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[uiCVarId]->pcvar, oCustomVarValue, this->m_vCVars[uiCVarId]->bConst);
+			return this->m_vDataTypes[uiCVarDataType].sEventTable.pfnAssignVarValue(wszName, (dnyScriptInterpreter::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[uiCVarId]->pcvar, oCustomVarValue, this->m_vCVars[uiCVarId]->bConst);
 		}
 
-		bool AssignCustomVar(dnyScriptParser::CVarManager::ICVar<dnyCustom>* pCustomVar, const std::wstring& wszTypeName, const std::wstring& wszExpression)
+		bool AssignCustomVar(dnyScriptInterpreter::CVarManager::ICVar<dnyCustom>* pCustomVar, const std::wstring& wszTypeName, const std::wstring& wszExpression)
 		{
 			//Assign custom variable value
 
@@ -523,7 +523,7 @@ namespace dnyScriptParser {
 					if (this->m_vCVars[i]->wszCustom.length()) {
 						size_t uiId;
 						if (this->FindDataType(this->m_vCVars[i]->wszCustom, &uiId)) {
-							this->m_vDataTypes[uiId].sEventTable.pfnRemoveVar(this->m_vCVars[i]->wszName, (dnyScriptParser::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[i]->pcvar);
+							this->m_vDataTypes[uiId].sEventTable.pfnRemoveVar(this->m_vCVars[i]->wszName, (dnyScriptInterpreter::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[i]->pcvar);
 						}
 					}
 
@@ -585,7 +585,7 @@ namespace dnyScriptParser {
 					case CT_CUSTOM: {
 						size_t uiItemId;
 						if (!this->FindDataType(this->m_vCVars[i]->wszCustom, &uiItemId)) return L"";
-						wszReplacerString = this->m_vDataTypes[uiItemId].sEventTable.pfnGetReplacerString(this->m_vCVars[i]->wszName, (dnyScriptParser::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[i]->pcvar);
+						wszReplacerString = this->m_vDataTypes[uiItemId].sEventTable.pfnGetReplacerString(this->m_vCVars[i]->wszName, (dnyScriptInterpreter::CVarManager::ICVar<dnyCustom>*)this->m_vCVars[i]->pcvar);
 						break;
 					}
 					default:
@@ -845,23 +845,23 @@ namespace dnyScriptParser {
 			return wszResult;
 		}
 
-		dnyScriptParser::CVarManager::cvartype_e TypeByName(const std::wstring& wszName)
+		dnyScriptInterpreter::CVarManager::cvartype_e TypeByName(const std::wstring& wszName)
 		{
 			//Get type indicator by string
 
-			dnyScriptParser::CVarManager::cvartype_e eResult = dnyScriptParser::CVarManager::cvartype_e::CT_UNKNOWN;
+			dnyScriptInterpreter::CVarManager::cvartype_e eResult = dnyScriptInterpreter::CVarManager::cvartype_e::CT_UNKNOWN;
 
 			if (wszName == L"bool") {
-				eResult = dnyScriptParser::CVarManager::cvartype_e::CT_BOOL;
+				eResult = dnyScriptInterpreter::CVarManager::cvartype_e::CT_BOOL;
 			}
 			else if (wszName == L"int") {
-				eResult = dnyScriptParser::CVarManager::cvartype_e::CT_INT;
+				eResult = dnyScriptInterpreter::CVarManager::cvartype_e::CT_INT;
 			}
 			else if (wszName == L"float") {
-				eResult = dnyScriptParser::CVarManager::cvartype_e::CT_FLOAT;
+				eResult = dnyScriptInterpreter::CVarManager::cvartype_e::CT_FLOAT;
 			}
 			else if (wszName == L"string") {
-				eResult = dnyScriptParser::CVarManager::cvartype_e::CT_STRING;
+				eResult = dnyScriptInterpreter::CVarManager::cvartype_e::CT_STRING;
 			}
 
 			return eResult;
@@ -3329,7 +3329,7 @@ namespace dnyScriptParser {
 		cvarptr_t FindCurrentFunctionLocalVarPtr(const std::wstring& wszName) { size_t uiId; if (!this->FindLocalVariable(wszName, this->GetCurrentFunctionContext(), &uiId)) return nullptr; return this->m_vFunctions[this->GetCurrentFunctionContext()].vLocalVars[uiId].pCVar; }
 		bool RemoveLocalVarFromCurrentFunctionContext(const std::wstring& wszVarName) { return this->FreeLocalVariable(wszVarName, this->GetCurrentFunctionContext()); }
 		inline void AbortScriptExecution(void) { this->m_bContinueScriptExecution = false; }
-		class dnyScriptParser::CObjectMgr* GetObjectMgr(void) { return this->m_pObjectMgr; }
+		class dnyScriptInterpreter::CObjectMgr* GetObjectMgr(void) { return this->m_pObjectMgr; }
 	};
 
 	bool CTOBJ_DeclareVar(const std::wstring& wszName, CVarManager::ICVar<dnyCustom>* pCVar);

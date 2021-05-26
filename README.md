@@ -8,7 +8,7 @@
 
 Released under the MIT license
 
-This tool is an extendable scripting shell for Windows using dnyScriptParser.
+This tool is an extendable scripting shell for Windows using dnyScriptInterpreter.
 The shell can be used either in interactive mode or just as a host for running
 DNYS script files. The functionality of the shell can be extended via native
 DLL plugins.
@@ -45,8 +45,8 @@ DLL plugins.
   all cleanup stuff. 
 * Please refer to the demo plugin sourcecode in order to view a full documented example
 
-This software is using dnyScriptParser v0.1 developed by Daniel Brendel.
-Please refer to dnyScriptParser.txt for more details.
+This software is using dnyScriptInterpreter v1.0 developed by Daniel Brendel.
+Please refer to dnyScriptInterpreter.md for more details.
 
 ## Changelog:
 * Version 1.0:

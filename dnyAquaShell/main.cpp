@@ -1,5 +1,5 @@
 #include "console.h"
-#include "dnyScriptParser.h"
+#include "dnyScriptInterpreter.h"
 #include "plugins.h"
 #include "resource.h"
 #include <codecvt>
@@ -49,12 +49,12 @@ namespace ShellInterface {
 	class CShellInterface { //Shell interface manager
 	private:
 		Console::CConInterface* m_pConsoleInt;
-		dnyScriptParser::CScriptingInterface* m_pScriptInt;
+		dnyScriptInterpreter::CScriptingInterface* m_pScriptInt;
 		Plugins::CPluginInt* m_pPluginInt;
 
 		struct IShellPluginAPI { //Plugin API interface
 			IShellPluginAPI() {}
-			IShellPluginAPI(dnyScriptParser::CScriptingInterface* pScriptInt, Console::CConInterface* pConInt) : m_pScriptInt(pScriptInt), m_pConInt(pConInt) {}
+			IShellPluginAPI(dnyScriptInterpreter::CScriptingInterface* pScriptInt, Console::CConInterface* pConInt) : m_pScriptInt(pScriptInt), m_pConInt(pConInt) {}
 			~IShellPluginAPI() { this->m_pScriptInt = nullptr; this->m_pConInt = nullptr; }
 
 			virtual bool Scr_ExecuteCode(const std::wstring& wszCode)
@@ -67,27 +67,27 @@ namespace ShellInterface {
 				return this->m_pScriptInt->ExecuteScript(wszScriptFile);
 			}
 
-			virtual bool Fnc_BeginFunctionCall(const std::wstring& wszFuncName, const dnyScriptParser::CVarManager::cvartype_e eResultType)
+			virtual bool Fnc_BeginFunctionCall(const std::wstring& wszFuncName, const dnyScriptInterpreter::CVarManager::cvartype_e eResultType)
 			{
 				return this->m_pScriptInt->BeginFunctionCall(wszFuncName, eResultType);
 			}
 
-			virtual bool Fnc_PushFunctionParam(dnyScriptParser::dnyBoolean value)
+			virtual bool Fnc_PushFunctionParam(dnyScriptInterpreter::dnyBoolean value)
 			{
 				return this->m_pScriptInt->PushFunctionParam(value);
 			}
 
-			virtual bool Fnc_PushFunctionParam(dnyScriptParser::dnyInteger value)
+			virtual bool Fnc_PushFunctionParam(dnyScriptInterpreter::dnyInteger value)
 			{
 				return this->m_pScriptInt->PushFunctionParam(value);
 			}
 
-			virtual bool Fnc_PushFunctionParam(dnyScriptParser::dnyFloat value)
+			virtual bool Fnc_PushFunctionParam(dnyScriptInterpreter::dnyFloat value)
 			{
 				return this->m_pScriptInt->PushFunctionParam(value);
 			}
 
-			virtual bool Fnc_PushFunctionParam(const dnyScriptParser::dnyString& value)
+			virtual bool Fnc_PushFunctionParam(const dnyScriptInterpreter::dnyString& value)
 			{
 				return this->m_pScriptInt->PushFunctionParam(value);
 			}
@@ -97,22 +97,22 @@ namespace ShellInterface {
 				return this->m_pScriptInt->ExecuteFunction();
 			}
 
-			virtual dnyScriptParser::dnyBoolean Fnc_QueryFunctionResultAsBoolean(void)
+			virtual dnyScriptInterpreter::dnyBoolean Fnc_QueryFunctionResultAsBoolean(void)
 			{
 				return this->m_pScriptInt->QueryFunctionResultAsBoolean();
 			}
 
-			virtual dnyScriptParser::dnyInteger Fnc_QueryFunctionResultAsInteger(void)
+			virtual dnyScriptInterpreter::dnyInteger Fnc_QueryFunctionResultAsInteger(void)
 			{
 				return this->m_pScriptInt->QueryFunctionResultAsInteger();
 			}
 
-			virtual dnyScriptParser::dnyFloat Fnc_QueryFunctionResultAsFloat(void)
+			virtual dnyScriptInterpreter::dnyFloat Fnc_QueryFunctionResultAsFloat(void)
 			{
 				return this->m_pScriptInt->QueryFunctionResultAsFloat();
 			}
 
-			virtual dnyScriptParser::dnyString Fnc_QueryFunctionResultAsString(void)
+			virtual dnyScriptInterpreter::dnyString Fnc_QueryFunctionResultAsString(void)
 			{
 				return this->m_pScriptInt->QueryFunctionResultAsString();
 			}
@@ -122,17 +122,17 @@ namespace ShellInterface {
 				return this->m_pScriptInt->EndFunctionCall();
 			}
 
-			virtual bool Cv_RegisterCVarType(const std::wstring& wszTypeName, dnyScriptParser::CVarManager::custom_cvar_type_s::cvar_type_event_table_s* pEventTable)
+			virtual bool Cv_RegisterCVarType(const std::wstring& wszTypeName, dnyScriptInterpreter::CVarManager::custom_cvar_type_s::cvar_type_event_table_s* pEventTable)
 			{
 				return this->m_pScriptInt->RegisterDataType(wszTypeName, pEventTable);
 			}
 
-			virtual dnyScriptParser::CVarManager::cvarptr_t Cv_RegisterCVar(const std::wstring& wszName, const dnyScriptParser::CVarManager::cvartype_e eType, bool bConst)
+			virtual dnyScriptInterpreter::CVarManager::cvarptr_t Cv_RegisterCVar(const std::wstring& wszName, const dnyScriptInterpreter::CVarManager::cvartype_e eType, bool bConst)
 			{
 				return this->m_pScriptInt->RegisterCVar(wszName, eType, bConst, false);
 			}
 
-			virtual dnyScriptParser::CVarManager::cvarptr_t Cv_FindCVar(const std::wstring& wszName)
+			virtual dnyScriptInterpreter::CVarManager::cvarptr_t Cv_FindCVar(const std::wstring& wszName)
 			{
 				return this->m_pScriptInt->FindCVar(wszName);
 			}
@@ -142,7 +142,7 @@ namespace ShellInterface {
 				return this->m_pScriptInt->FreeCVar(wszName);
 			}
 
-			virtual bool Cmd_RegisterCommand(const std::wstring& wszCmdName, dnyScriptParser::CCommandManager::cmdinterface_t pCmdInterface, dnyScriptParser::CVarManager::cvartype_e eType)
+			virtual bool Cmd_RegisterCommand(const std::wstring& wszCmdName, dnyScriptInterpreter::CCommandManager::cmdinterface_t pCmdInterface, dnyScriptInterpreter::CVarManager::cvartype_e eType)
 			{
 				return this->m_pScriptInt->RegisterCommand(wszCmdName, pCmdInterface, eType);
 			}
@@ -162,7 +162,7 @@ namespace ShellInterface {
 				return this->m_pConInt->Int_QueryInput();
 			}
 		private:
-			dnyScriptParser::CScriptingInterface* m_pScriptInt;
+			dnyScriptInterpreter::CScriptingInterface* m_pScriptInt;
 			Console::CConInterface* m_pConInt;
 		} *m_pShellInt;
 
@@ -173,7 +173,7 @@ namespace ShellInterface {
 		friend void SI_StandardOutput(const std::wstring& wszText);
 		friend BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
 
-		class IBaseReadmeCommandInterface : public dnyScriptParser::CCommandManager::IVoidCommandInterface {
+		class IBaseReadmeCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		#define TXT_DOCUMENTATION_TEMP_FILENAME L"documentation.txt"
 		protected:
 			virtual bool ShowResource(const WORD wResourceId)
@@ -248,11 +248,11 @@ namespace ShellInterface {
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance) = 0;
 		};
 
-		class IRequireCommandInterface : public dnyScriptParser::CCommandManager::IVoidCommandInterface {
+		class IRequireCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
-				dnyScriptParser::ICodeContext* pContext = (dnyScriptParser::ICodeContext*)pCodeContext;
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 
 				if (__pShellInterface__->m_pPluginInt->PluginLoaded(__pShellInterface__->m_wszBaseDir + L"plugins\\" + pContext->GetPartString(1) + L".dll")) {
 					std::wcout << L"Required library \"" << pContext->GetPartString(1) << L"\" is already loaded" << std::endl;
@@ -269,23 +269,23 @@ namespace ShellInterface {
 			}
 		} m_oRequireCommand;
 
-		class IExecCommandInterface : public dnyScriptParser::CCommandManager::IVoidCommandInterface {
+		class IExecCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
-				dnyScriptParser::ICodeContext* pContext = (dnyScriptParser::ICodeContext*)pCodeContext;
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 				
 				return __pShellInterface__->m_pScriptInt->ExecuteScript(pContext->GetPartString(1));
 			}
 		} m_oExecCommand;
 
-		class ISysCommandInterface : public dnyScriptParser::CCommandManager::IVoidCommandInterface {
+		class ISysCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			ISysCommandInterface() {}
 
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
-				dnyScriptParser::ICodeContext* pContext = (dnyScriptParser::ICodeContext*)pCodeContext;
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 
 				system(SI_WStringToString(pContext->GetPartString(1)).c_str());
 
@@ -293,13 +293,13 @@ namespace ShellInterface {
 			}
 		} m_oSysCommand;
 
-		class IRunCommandInterface : public dnyScriptParser::CCommandManager::IVoidCommandInterface {
+		class IRunCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			IRunCommandInterface() {}
 
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
-				dnyScriptParser::ICodeContext* pContext = (dnyScriptParser::ICodeContext*)pCodeContext;
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 
 				ShellExecute(0, L"open", pContext->GetPartString(1).c_str(), pContext->GetPartString(2).c_str(), pContext->GetPartString(3).c_str(), SW_SHOWNORMAL);
 
@@ -307,7 +307,7 @@ namespace ShellInterface {
 			}
 		} m_oRunCommand;
 
-		class IListLibsCommandInterface : public dnyScriptParser::CCommandManager::IVoidCommandInterface {
+		class IListLibsCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			IListLibsCommandInterface() {}
 
@@ -319,7 +319,7 @@ namespace ShellInterface {
 			}
 		} m_oLibListCommand;
 
-		class IExitCommandInterface : public dnyScriptParser::CCommandManager::IVoidCommandInterface {
+		class IExitCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			IExitCommandInterface() {}
 
@@ -362,7 +362,7 @@ namespace ShellInterface {
 				return false;
 
 			//Initialize scripting interface
-			this->m_pScriptInt = new dnyScriptParser::CScriptingInterface(/*this->m_wszBaseDir*/L"", &SI_StandardOutput);
+			this->m_pScriptInt = new dnyScriptInterpreter::CScriptingInterface(/*this->m_wszBaseDir*/L"", &SI_StandardOutput);
 			if (!this->m_pScriptInt) {
 				this->Free();
 				return false;
@@ -391,13 +391,13 @@ namespace ShellInterface {
 
 			//Add further commands
 			#define SI_ADD_COMMAND(name, obj, type) if (!this->m_pScriptInt->RegisterCommand(name, obj, type)) { this->Free(); return false; }
-			SI_ADD_COMMAND(L"require", &m_oRequireCommand, dnyScriptParser::CVarManager::CT_VOID);
-			SI_ADD_COMMAND(L"exec", &m_oExecCommand, dnyScriptParser::CVarManager::CT_VOID);
-			SI_ADD_COMMAND(L"sys", &m_oSysCommand, dnyScriptParser::CVarManager::CT_VOID);
-			SI_ADD_COMMAND(L"run", &m_oRunCommand, dnyScriptParser::CVarManager::CT_VOID);
-			SI_ADD_COMMAND(L"./", &m_oRunCommand, dnyScriptParser::CVarManager::CT_VOID);
-			SI_ADD_COMMAND(L"listlibs", &m_oLibListCommand, dnyScriptParser::CVarManager::CT_VOID);
-			SI_ADD_COMMAND(L"quit", &m_oExitCommand, dnyScriptParser::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"require", &m_oRequireCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"exec", &m_oExecCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"sys", &m_oSysCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"run", &m_oRunCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"./", &m_oRunCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"listlibs", &m_oLibListCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"quit", &m_oExitCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 
 			//Execute init-script if exists
 			if (SI_FileExists(this->m_wszBaseDir + L"scripts\\init.dnys")) {
@@ -417,8 +417,8 @@ namespace ShellInterface {
 
 					this->m_pScriptInt->ExecuteScript(wszScriptFileName);
 
-					if (dnyScriptParser::GetErrorInformation().GetErrorCode() != dnyScriptParser::SET_NO_ERROR) {
-						std::wcout << L"** Error **\n" << wszScriptFileName << L" (" << dnyScriptParser::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptParser::GetErrorInformation().GetErrorText() << std::endl;
+					if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
+						std::wcout << L"** Error **\n" << wszScriptFileName << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
 					}
 				}
 			} else { 
@@ -524,8 +524,8 @@ namespace ShellInterface {
 
 				this->m_pScriptInt->ExecuteCode(wszConsoleLine); //Execute code
 
-				if (dnyScriptParser::GetErrorInformation().GetErrorCode() != dnyScriptParser::SET_NO_ERROR) {
-					std::wcout << L"** Error **\n" << wszConsoleLine << L" (" << dnyScriptParser::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptParser::GetErrorInformation().GetErrorText() << std::endl;
+				if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
+					std::wcout << L"** Error **\n" << wszConsoleLine << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
 				}
 			}
 		}

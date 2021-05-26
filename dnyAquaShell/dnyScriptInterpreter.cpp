@@ -1,7 +1,7 @@
-#include "dnyScriptParser.h"
+#include "dnyScriptInterpreter.h"
 
 /*
-	dnyScriptParser developed by Daniel Brendel
+	dnyScriptInterpreter developed by Daniel Brendel
 
 	(C) 2017 - 2021 by Daniel Brendel
 
@@ -12,7 +12,7 @@
 	Released under the MIT license
 */
 
-namespace dnyScriptParser {
+namespace dnyScriptInterpreter {
 
 	/* Error handling */
 
@@ -135,7 +135,7 @@ namespace dnyScriptParser {
 		std::wstring wszVarName = std::wstring(&this->m_pCurrentInstance->wszName[1]) + L"." + pCodeContext->GetPartString(1);
 		
 		//Attempt to register member variable
-		dnyScriptParser::CVarManager::cvarptr_t pCVar = this->m_pInterface->RegisterCVar(wszVarName, this->TypeByName(pCodeContext->GetPartString(2)), false, false);
+		dnyScriptInterpreter::CVarManager::cvarptr_t pCVar = this->m_pInterface->RegisterCVar(wszVarName, this->TypeByName(pCodeContext->GetPartString(2)), false, false);
 		if (!pCVar)
 			return false;
 

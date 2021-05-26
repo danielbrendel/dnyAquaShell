@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dnyScriptParser.cpp">
+    <ClCompile Include="dnyScriptInterpreter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
@@ -29,7 +29,7 @@
     <ClInclude Include="constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dnyScriptParser.h">
+    <ClInclude Include="dnyScriptInterpreter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="plugins.h">
@@ -43,9 +43,5 @@
     <ResourceCompile Include="app.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="dnyScriptParser.txt" />
-    <Text Include="readme.txt" />
   </ItemGroup>
 </Project>
