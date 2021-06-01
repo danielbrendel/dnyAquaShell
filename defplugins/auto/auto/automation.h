@@ -61,7 +61,7 @@ namespace Automation {
 			size_t uiId;
 			if (!this->Find(wszName, &uiId)) return false;
 			ICVar<dnyString>* pStrVar = (ICVar<dnyString>*)this->m_vHwnd[uiId].pv;
-			pStrVar->SetValue(std::to_wstring((_ULonglong)hWnd));
+			pStrVar->SetValue(std::to_wstring((unsigned long long)hWnd));
 			this->m_vHwnd[uiId].hWnd = hWnd;
 			return true;
 		}

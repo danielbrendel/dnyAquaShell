@@ -89,7 +89,7 @@ namespace SpeechInt {
 		if (!pVoiceInstance)
 			return false;
 		
-		std::wstring wszSpeakBuffer = L"<volume level=\"" + std::to_wstring((_Longlong)usVolume) + L"\"><pitch absmiddle=\"" + std::to_wstring((_Longlong)usPitch) + L"\"><rate speed=\"" + std::to_wstring((_Longlong)usSpeed) + L"\">" + wszText + L"</volume></pitch></rate>";
+		std::wstring wszSpeakBuffer = L"<volume level=\"" + std::to_wstring((long long)usVolume) + L"\"><pitch absmiddle=\"" + std::to_wstring((long long)usPitch) + L"\"><rate speed=\"" + std::to_wstring((long long)usSpeed) + L"\">" + wszText + L"</volume></pitch></rate>";
 	
 		return SUCCEEDED(pVoiceInstance->Speak(wszSpeakBuffer.c_str(), SPF_IS_XML, nullptr));
 	}
@@ -101,7 +101,7 @@ namespace SpeechInt {
 		if (!pVoiceInstance)
 			return false;
 
-		std::wstring wszSpeakBuffer = L"<volume level=\"" + std::to_wstring((_Longlong)usVolume) + L"\"><pitch absmiddle=\"" + std::to_wstring((_Longlong)usPitch) + L"\"><rate speed=\"" + std::to_wstring((_Longlong)usSpeed) + L"\">" + wszText + L"</volume></pitch></rate>";
+		std::wstring wszSpeakBuffer = L"<volume level=\"" + std::to_wstring((long long)usVolume) + L"\"><pitch absmiddle=\"" + std::to_wstring((long long)usPitch) + L"\"><rate speed=\"" + std::to_wstring((long long)usSpeed) + L"\">" + wszText + L"</volume></pitch></rate>";
 
 		return SUCCEEDED(pVoiceInstance->Speak(wszSpeakBuffer.c_str(), SPF_IS_XML | SPF_ASYNC, nullptr));
 	}

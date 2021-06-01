@@ -1,7 +1,5 @@
 #dnyScriptInterpreter demo script file
 
-require "demo";
-
 declare boolvar bool;
 declare intvar int;
 declare floatvar float;
