@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-	dnyAquaShell developed by Daniel Brendel
+	AquaShell (dnyAquaShell) developed by Daniel Brendel
 
 	(C) 2017 - 2022 by Daniel Brendel
 
