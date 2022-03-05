@@ -274,8 +274,25 @@ namespace ShellInterface {
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
 				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pObjectInstance);
+
+				for (size_t i = 1; i < pContext->GetPartCount(); i++) {
+					std::wstring wszData = pContext->GetPartData(i);
+
+					dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pCvar = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(std::to_wstring(i), dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
+					if (pCvar) {
+						pCvar->SetValue(wszData);
+					}
+				}
 				
-				return __pShellInterface__->m_pScriptInt->ExecuteScript(pContext->GetPartString(1));
+				bool bResult = __pShellInterface__->m_pScriptInt->ExecuteScript(pContext->GetPartString(1));
+
+				for (size_t i = 1; i < pContext->GetPartCount(); i++) {
+					__pShellInterface__->m_pScriptInt->FreeCVar(std::to_wstring(i));
+				}
+
+				return bResult;
 			}
 		} m_oExecCommand;
 
