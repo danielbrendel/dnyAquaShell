@@ -14,9 +14,9 @@ DNYS script files. The functionality of the shell can be extended via native
 DLL plugins.
 
 ## Basic commands:
-* require # Attempts to load a plugin library. Only needed when not running in interactive mode
+* require (library) # Attempts to load a plugin library. Only needed when not running in interactive mode
 * exec (scriptfile) # Executes a script file
-* sys (string) # Passes the string to the Windows batch system
+* sys (string) (opt:storage var) # Attempts to run the expression as a windows command. If a result var is provided the output is stored in it, else the output gets echoed.
 * run (file) (args) (dir) # Attempts to launch a specified file 
 * listlibs # Lists all shell plugin libraries
 * quit # Exists the shell

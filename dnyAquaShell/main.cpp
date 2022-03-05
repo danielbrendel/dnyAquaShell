@@ -3,6 +3,8 @@
 #include "plugins.h"
 #include "resource.h"
 #include <codecvt>
+#include <array>
+#include <memory>
 
 /*
 	AquaShell (dnyAquaShell) developed by Daniel Brendel
@@ -42,6 +44,27 @@ namespace ShellInterface {
 		std::wstring_convert<convert_typeX, wchar_t> converterX;
 
 		return converterX.to_bytes(wstr);
+	}
+
+	std::wstring system_exec(const std::wstring& wszCmd, bool echo = false)
+	{
+		std::array<wchar_t, 128> buffer;
+		std::wstring result;
+
+		std::unique_ptr<FILE, decltype(&_pclose)> pipe(_wpopen(wszCmd.c_str(), L"r"), _pclose);
+		if (!pipe) {
+			return L"";
+		}
+
+		while (fgetws(buffer.data(), (int)buffer.size(), pipe.get()) != nullptr) {
+			if (echo) {
+				std::wcout << buffer.data();
+			}
+
+			result += buffer.data();
+		}
+		
+		return result;
 	}
 
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
@@ -173,81 +196,6 @@ namespace ShellInterface {
 		friend void SI_StandardOutput(const std::wstring& wszText);
 		friend BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
 
-		class IBaseReadmeCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
-		#define TXT_DOCUMENTATION_TEMP_FILENAME L"documentation.txt"
-		protected:
-			virtual bool ShowResource(const WORD wResourceId)
-			{
-				//Show resource in editor
-
-				if (!wResourceId)
-					return false;
-				
-				//Find resource
-				HRSRC hResource = FindResource(NULL, MAKEINTRESOURCE(wResourceId), MAKEINTRESOURCE(TEXTFILE));
-				if (!hResource)
-					return false;
-				
-				//Obtain size of resource
-				DWORD dwResSize = SizeofResource(NULL, hResource);
-				if (!dwResSize)
-					return false;
-				
-				//Get handle to resource
-				HGLOBAL hGlobal = LoadResource(NULL, hResource);
-				if (!hGlobal)
-					return false;
-				
-				//Obtain pointer to memory start address of resource
-				LPVOID lpvMemoryBlock = LockResource(hGlobal);
-				if (!lpvMemoryBlock)
-					return false;
-				
-				//Delete old doc file if exists
-				if (SI_FileExists(TXT_DOCUMENTATION_TEMP_FILENAME))
-					DeleteFile(TXT_DOCUMENTATION_TEMP_FILENAME);
-				
-				//Save doc content to file
-
-				HANDLE hFile = CreateFile(TXT_DOCUMENTATION_TEMP_FILENAME, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
-				if (hFile == INVALID_HANDLE_VALUE)
-					return false;
-				
-				DWORD dwBytesWritten;
-				if (!WriteFile(hFile, lpvMemoryBlock, dwResSize, &dwBytesWritten, NULL)) {
-					CloseHandle(hFile);
-					DeleteFile(TXT_DOCUMENTATION_TEMP_FILENAME);
-					return false;
-				}
-
-				CloseHandle(hFile);
-
-				//Run with ShellExecute to view in default text viewer and wait until viewer is closed
-
-				SHELLEXECUTEINFO sShellExecInfo = { 0 };
-				sShellExecInfo.cbSize = sizeof(sShellExecInfo);
-				sShellExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-				sShellExecInfo.lpFile = TXT_DOCUMENTATION_TEMP_FILENAME;
-				sShellExecInfo.lpDirectory = L"";
-				sShellExecInfo.lpParameters = L"";
-				sShellExecInfo.nShow = SW_SHOWNORMAL;
-
-				if (!ShellExecuteEx(&sShellExecInfo)) {
-					DeleteFile(TXT_DOCUMENTATION_TEMP_FILENAME);
-					return false;
-				}
-				
-				WaitForSingleObject(sShellExecInfo.hProcess, INFINITE);
-
-				CloseHandle(sShellExecInfo.hProcess);
-
-				//Delete temp doc file
-				return DeleteFile(TXT_DOCUMENTATION_TEMP_FILENAME) == TRUE;
-			}
-		public:
-			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance) = 0;
-		};
-
 		class IRequireCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
@@ -304,7 +252,19 @@ namespace ShellInterface {
 			{
 				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 
-				system(SI_WStringToString(pContext->GetPartString(1)).c_str());
+				std::wstring wszVar = pContext->GetPartString(2);
+				std::wstring wszResult = system_exec(pContext->GetPartString(1), wszVar.length() == 0);
+
+				if (wszVar.length()) {
+					dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pCVar = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->FindCVar(wszVar);
+					if (!pCVar) {
+						pCVar = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(wszVar, dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
+					}
+
+					if (pCVar) {
+						pCVar->SetValue(wszResult);
+					}
+				}
 
 				return true;
 			}
