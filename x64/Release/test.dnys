@@ -1,0 +1,6 @@
+print "das ist aber toll";
+sys pause;
+
+sys "ping google.de";
+
+pause;

@@ -499,9 +499,13 @@ namespace ShellInterface {
 				if (wszConsoleLine[wszConsoleLine.length() - 1] != L';')
 					wszConsoleLine += L";";
 
-				this->m_pScriptInt->ExecuteCode(wszConsoleLine); //Execute code
+				if (!this->m_pScriptInt->ExecuteCode(wszConsoleLine)) { //Execute code
+					if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() == dnyScriptInterpreter::SET_UNKNOWN_COMMAND) {
+						_wsystem(wszConsoleLine.substr(0, wszConsoleLine.length() - 1).c_str());
+					}
+				}
 
-				if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
+				if ((dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) && (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_UNKNOWN_COMMAND)) {
 					std::wcout << L"** Error **\n" << wszConsoleLine << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
 				}
 			}
