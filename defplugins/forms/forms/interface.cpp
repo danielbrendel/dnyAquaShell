@@ -1223,7 +1223,7 @@ public:
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
 	L"Forms",
-	L"0.1",
+	L"1.0",
 	L"Daniel Brendel",
 	L"dbrendel1988<at>gmail<dot>com",
 	L"Windows forms and controls provider"

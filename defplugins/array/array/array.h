@@ -1082,7 +1082,7 @@ namespace Array {
 
 		//Unegister commands
 		#define UNREG_CMD(n) if (!pShellPluginAPI->Cmd_UnregisterCommand(n)) return false;
-		UNREG_CMD(L"stat_array");
+		UNREG_CMD(L"static_array");
 		UNREG_CMD(L"store_array_item_s");
 		UNREG_CMD(L"free_array_s");
 		UNREG_CMD(L"dynamic_array");

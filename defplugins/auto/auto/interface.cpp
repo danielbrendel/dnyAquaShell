@@ -442,7 +442,7 @@ public:
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
 	L"Auto",
-	L"0.1",
+	L"1.0",
 	L"Daniel Brendel",
 	L"dbrendel1988<at>gmail<dot>com",
 	L"Automation utility provider"
@@ -486,8 +486,8 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_run", &g_oRunCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_iskeydown", &g_oIsKeyDownCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_iskeyup", &g_oIsKeyUpCommandInterface, CT_BOOL);
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"auto_enumwindows", &g_oEnumWindowsCommandInterface, CT_BOOL);
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"auto_enumchildwindows", &g_oEnumChildWindowsCommandInterface, CT_BOOL);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_enumwindows", &g_oEnumWindowsCommandInterface, CT_BOOL);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_enumchildwindows", &g_oEnumChildWindowsCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendkeystrokes", &g_oSendKeyboardInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmousestrokes", &g_oSendMouseInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addkeyevent", &g_oAddKeyboardHookCommandInterface, CT_BOOL);
@@ -519,8 +519,8 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_run");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_iskeydown");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_iskeyup");
-	g_pShellPluginAPI->Cmd_UnregisterCommand(L"auto_enumwindows");
-	g_pShellPluginAPI->Cmd_UnregisterCommand(L"auto_enumchildwindows");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_enumwindows");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_enumchildwindows");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendkeystrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmousestrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addkeyevent");
