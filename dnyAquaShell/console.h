@@ -67,7 +67,7 @@ namespace Console {
 
 			//Print info text
 			std::wcout << L"==============================================================" << std::endl;
-			std::wcout << L"* " DNY_AS_PRODUCT_NAME L" v" DNY_AS_PRODUCT_VERSION << std::endl;
+			std::wcout << L"* " DNY_AS_PRODUCT_NAME L" (" DNY_AS_PRODUCT_CODENAME L") v" DNY_AS_PRODUCT_VERSION << std::endl;
 			std::wcout << L"* Developed by " DNY_AS_PRODUCT_AUTHOR L" (" DNY_AS_PRODUCT_CONTACT L")" << std::endl;
 			std::wcout << L"* Released under " DNY_AS_PRODUCT_LICENCE << std::endl;
 			std::wcout << L"==============================================================" << std::endl << std::endl;

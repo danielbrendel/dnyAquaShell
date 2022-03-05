@@ -12,7 +12,8 @@
 	Released under the MIT license
 */
 
-#define DNY_AS_PRODUCT_NAME L"dnyAquaShell"
+#define DNY_AS_PRODUCT_NAME L"AquaShell"
+#define DNY_AS_PRODUCT_CODENAME L"dnyAquaShell"
 #define DNY_AS_PRODUCT_VERSION L"1.0"
 #define DNY_AS_PRODUCT_AUTHOR L"Daniel Brendel"
 #define DNY_AS_PRODUCT_CONTACT L"dbrendel1988<at>gmail<dot>com"
