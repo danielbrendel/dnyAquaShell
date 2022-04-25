@@ -65,7 +65,7 @@ namespace IRCFramework {
 	{
 		ircclient_s* pData = this->m_pInstance->FindClient(pInstance);
 		if (pData) {
-			pShellPluginAPI->Scr_ExecuteCode(L"call " + pData->wszIdent + L"_OnDisonnected() => void;");
+			pShellPluginAPI->Scr_ExecuteCode(L"call " + pData->wszIdent + L"_OnDisconnected() => void;");
 		}
 	}
 	void CMgrFrameworkAPI::OnError(NetworkObjectInstance pInstance, int iErrorMessage)

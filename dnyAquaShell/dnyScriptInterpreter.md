@@ -1,6 +1,6 @@
 # dnyScriptInterpreter developed by Daniel Brendel
 
-(C) 2017 - 2021 by Daniel Brendel
+(C) 2017 - 2022 by Daniel Brendel
 
 **Version**: 1.0\
 **Contact**: dbrendel1988(at)gmail(dot)com\
@@ -35,12 +35,12 @@ Altough not neccessarly required you should put argument expressions in () brack
 in {} brackets (note: it depends on the command provider whether argument or code expressions are required. 
 Most of the times you will just encounter parameterized commands). See the example below:
 ```
-#The following function implementation works, but looks like bad style
-function myFunction string "arg1 string, arg2 string" "print %arg1%arg2;";
+#The following function implementation works, but is bad style
+function myFunction void "arg1 string, arg2 string" "print %arg1%arg2;";
 ```
 You can see that you couldn't include spacing between the argument accessor code. A better example would be:
 ```
-function myFunction string(arg1 string, arg2 string)
+function myFunction void(arg1 string, arg2 string)
 {
 	print "%arg1 %arg2"; #This is a comment
 };
@@ -162,7 +162,7 @@ declare classInstance class;
 set @classInstance <= MyTestClass;
 call @classInstance.SomeMethod() => void;
 set someVariable <= "%classInstance.MyVariable";
-undeclare @classInstance;
+unset @classInstance;
 ```
 
 6) Commands
@@ -190,7 +190,7 @@ you should stick to the result-command interface. It supports all dny-data types
 const constname consttype <= value; //Registers a constant with the given name, type and value\
 declare varname vartype; //Registers a global variable with the associated type\
 set varname <= value; //Assigns a value to a global/local variable\
-undeclare varname; //Removes a global variable\
+unset varname; //Removes a global variable\
 function name rettype(paramters) {code} //Defines a function\
 local varname vartype; //Registers a local function variable inside a function with the associated type\
 result value; //Sets the result value of the associated function\
@@ -236,7 +236,3 @@ exit; //Aborts script execution\
 
 ## System requirements:
 * ISO-conform C++ compiler
-
-##Changelog:
-* Version 1.0:
-	* (Initial release)

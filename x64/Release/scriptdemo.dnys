@@ -34,11 +34,10 @@ print "between";
 function callme int(arg1 int)
 {
 	print "You have called me! %arg1";
-	declare temp int;
+	local temp int;
 	set temp <= %arg1;
 	*= temp 1000;
 	result %temp;
-	undeclare temp;
 };
 
 print "1.: %intvar";
@@ -78,7 +77,7 @@ while(%whilevar, -ls, 20)
 	+= whilevar 2;
 };
 
-undeclare whilevar;
+unset whilevar;
 
 print "%whilevar";
 

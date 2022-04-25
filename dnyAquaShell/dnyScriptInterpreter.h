@@ -11,7 +11,7 @@
 /*
 	dnyScriptInterpreter developed by Daniel Brendel
 
-	(C) 2017 - 2021 by Daniel Brendel
+	(C) 2017 - 2022 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
@@ -622,6 +622,11 @@ namespace dnyScriptInterpreter {
 			}
 
 			return CT_UNKNOWN;
+		}
+
+		void FreeAllVars(void)
+		{
+			this->Clear();
 		}
 	};
 	
@@ -1906,6 +1911,7 @@ namespace dnyScriptInterpreter {
 
 		#define INTERNAL_COMMAND_HANDLER_METHOD(name, code) struct I##name : public IInternalCmdHandler { bool InternalHandlerFunc(class CScriptingInterface* pThis, class ICodeContext* pContext) { {code} } } o##name;
 		#define CHECK_VALID_ARGUMENT_COUNT(cnt) if (pContext->GetPartCount() != cnt) return false;
+		#define CHECK_MIN_ARGUMENT_COUNT(cnt) if (pContext->GetPartCount() < cnt) return false;
 
 		INTERNAL_COMMAND_HANDLER_METHOD(HandleConstantDeclaration,
 			//Handle constant declaration
@@ -2070,15 +2076,14 @@ namespace dnyScriptInterpreter {
 		INTERNAL_COMMAND_HANDLER_METHOD(HandleFunctionCall,
 			//Handle function call
 
-			CHECK_VALID_ARGUMENT_COUNT(5);
+			CHECK_MIN_ARGUMENT_COUNT(2);
 		
-			if (pContext->GetPartData(3) != L"=>")
-				return false;
-
 			cvarptr_t pCVar = nullptr;
-
-			if (pContext->GetPartData(4) != L"void") {
-				pCVar = pThis->FindCVar(pContext->GetPartData(4));
+			
+			if (pContext->GetPartData(3) == L"=>") {
+				if (pContext->GetPartData(4) != L"void") {
+					pCVar = pThis->FindCVar(pContext->GetPartData(4));
+				}
 			}
 			
 			return pThis->CallFunction(pThis->ReplaceAllVariables(pContext->GetPartData(1)), pThis->ReplaceAllVariables(pContext->GetPartData(2)), pCVar);
@@ -2952,7 +2957,7 @@ namespace dnyScriptInterpreter {
 			REG_INTERNAL_CMD(L"const", &oHandleConstantDeclaration);
 			REG_INTERNAL_CMD(L"declare", &oHandleVariableDeclaration);
 			REG_INTERNAL_CMD(L"set", &oHandleVariableAssignment);
-			REG_INTERNAL_CMD(L"undeclare", &oHandleVariableRemoval);
+			REG_INTERNAL_CMD(L"unset", &oHandleVariableRemoval);
 			REG_INTERNAL_CMD(L"function", &oHandleFunctionRegistration);
 			REG_INTERNAL_CMD(L"local", &oHandleLocalVarRegistration);
 			REG_INTERNAL_CMD(L"call", &oHandleFunctionCall);
