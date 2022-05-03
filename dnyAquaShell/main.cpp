@@ -55,7 +55,7 @@ namespace ShellInterface {
 		if (!pipe) {
 			return L"";
 		}
-
+		
 		while (fgetws(buffer.data(), (int)buffer.size(), pipe.get()) != nullptr) {
 			if (echo) {
 				std::wcout << buffer.data();
@@ -477,6 +477,10 @@ namespace ShellInterface {
 			while (this->m_bShallRun) {
 				*this->m_pConsoleInt >> wszConsoleLine; //Query input
 
+				//Clear input buffer
+				std::wcin.clear();
+				fflush(stdin);
+
 				if ((wszConsoleLine == L"<") && (!bInMulitLine)) { //Check for multiline mode indicator
 					bInMulitLine = true;
 					wszMultiLine = L"";
@@ -496,8 +500,9 @@ namespace ShellInterface {
 					continue;
 				}
 
-				if (wszConsoleLine[wszConsoleLine.length() - 1] != L';')
+				if ((wszConsoleLine.length() > 0) && (wszConsoleLine[wszConsoleLine.length() - 1] != L';')) {
 					wszConsoleLine += L";";
+				}
 
 				if (!this->m_pScriptInt->ExecuteCode(wszConsoleLine)) { //Execute code
 					if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() == dnyScriptInterpreter::SET_UNKNOWN_COMMAND) {
@@ -517,6 +522,11 @@ namespace ShellInterface {
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType)
 	{
 		//Handle console control events
+		
+		if ((dwCtrlType == CTRL_C_EVENT) || (dwCtrlType == CTRL_BREAK_EVENT)) {
+			std::wcout << std::endl;
+			return TRUE;
+		}
 
 		if ((dwCtrlType == CTRL_CLOSE_EVENT) || (dwCtrlType == CTRL_SHUTDOWN_EVENT)) { //Check for close events
 			__pShellInterface__->ShutdownShell(); //Clear indicator in order to let the program close
