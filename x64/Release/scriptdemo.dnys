@@ -5,6 +5,7 @@ declare intvar int;
 declare floatvar float;
 declare stringvar string;
 declare stringvar2 string;
+declare namestr string;
 
 set boolvar <= true;
 set intvar <= 100;
@@ -46,11 +47,6 @@ call somefunc("test1", "test2") => intvar;
 
 print "2.: %intvar";
 
-mycommand "This is a text";
-mycommand2 5 floatvar;
-
-print "3. %floatvar";
-
 for(i, 10, 0, -dec)
 {
 	if(%i, -lse, 4)
@@ -80,6 +76,12 @@ while(%whilevar, -ls, 20)
 unset whilevar;
 
 print "%whilevar";
+
+getscriptpath namestr;
+print "Script path: %namestr";
+
+getscriptname namestr;
+print "Script full name: %namestr";
 
 sys pause;
 

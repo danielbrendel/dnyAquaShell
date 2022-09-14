@@ -21,6 +21,10 @@ DLL plugins.
 * listlibs # Lists all shell plugin libraries
 * quit # Exists the shell
 
+## Helper commands:
+* getscriptpath (result) # Stores the full path of the current executed script in the result var
+* getscriptname (result) # Stores the full file name of the current executed script in the result var
+
 ## Multiline support:
 * \< # Opens the editor in multiline mode
 * (code)

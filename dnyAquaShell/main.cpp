@@ -67,12 +67,61 @@ namespace ShellInterface {
 		return result;
 	}
 
+	std::wstring ExtractFilePath(const std::wstring& wszFile)
+	{
+		//Extract file path
+
+		wchar_t wszFullFileName[MAX_PATH * 2];
+		lstrcpyW(wszFullFileName, wszFile.c_str());
+
+		for (size_t i = wcslen(wszFullFileName); i > 0; i--) {
+			if (wszFullFileName[i] == '\\')
+				break;
+			wszFullFileName[i] = 0;
+		}
+
+		return wszFullFileName;
+	}
+
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
+
+	class CExtendedScriptingInterface : public dnyScriptInterpreter::CScriptingInterface {
+	private:
+		std::vector<std::wstring> m_vCurrentScripts;
+	public:
+		CExtendedScriptingInterface() : dnyScriptInterpreter::CScriptingInterface() {}
+		CExtendedScriptingInterface(const std::wstring& wszScriptDirectory, const dnyScriptInterpreter::CScriptingInterface::TpfnStandardOutput pfnStandardOutput) : dnyScriptInterpreter::CScriptingInterface(wszScriptDirectory, pfnStandardOutput) { }
+		~CExtendedScriptingInterface() {}
+
+		bool ExecuteScript(const std::wstring& wszScriptFile)
+		{
+			//Gateway to script execution function
+
+			this->m_vCurrentScripts.push_back(wszScriptFile);
+
+			bool bResult = dnyScriptInterpreter::CScriptingInterface::ExecuteScript(wszScriptFile);
+
+			this->m_vCurrentScripts.erase(this->m_vCurrentScripts.begin() + this->m_vCurrentScripts.size() - 1);
+
+			return bResult;
+		}
+
+		const std::wstring GetCurrentScript(void)
+		{
+			//Get current running script
+
+			if (this->m_vCurrentScripts.size() > 0) {
+				return this->m_vCurrentScripts[this->m_vCurrentScripts.size() - 1];
+			}
+
+			return L"";
+		}
+	};
 
 	class CShellInterface { //Shell interface manager
 	private:
 		Console::CConInterface* m_pConsoleInt;
-		dnyScriptInterpreter::CScriptingInterface* m_pScriptInt;
+		CExtendedScriptingInterface* m_pScriptInt;
 		Plugins::CPluginInt* m_pPluginInt;
 
 		struct IShellPluginAPI { //Plugin API interface
@@ -308,6 +357,34 @@ namespace ShellInterface {
 			}
 		} m_oExitCommand;
 
+		class ICurrentScriptNameCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyString> {
+		public:
+			ICurrentScriptNameCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
+			{
+				const std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
+
+				this->SetResult(wszScriptName);
+
+				return true;
+			}
+		} m_oCurrentScriptNameCommand;
+
+		class ICurrentScriptPathCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyString> {
+		public:
+			ICurrentScriptPathCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
+			{
+				const std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
+
+				this->SetResult(ExtractFilePath(wszScriptName));
+
+				return true;
+			}
+		} m_oCurrentScriptPathCommand;
+
 		bool Initialize(int argc, wchar_t* argv[])
 		{
 			//Initialize shell interface
@@ -339,7 +416,7 @@ namespace ShellInterface {
 				return false;
 
 			//Initialize scripting interface
-			this->m_pScriptInt = new dnyScriptInterpreter::CScriptingInterface(/*this->m_wszBaseDir*/L"", &SI_StandardOutput);
+			this->m_pScriptInt = new CExtendedScriptingInterface(/*this->m_wszBaseDir*/L"", &SI_StandardOutput);
 			if (!this->m_pScriptInt) {
 				this->Free();
 				return false;
@@ -368,6 +445,8 @@ namespace ShellInterface {
 
 			//Add further commands
 			#define SI_ADD_COMMAND(name, obj, type) if (!this->m_pScriptInt->RegisterCommand(name, obj, type)) { this->Free(); return false; }
+			SI_ADD_COMMAND(L"getscriptpath", &m_oCurrentScriptPathCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
+			SI_ADD_COMMAND(L"getscriptname", &m_oCurrentScriptNameCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"require", &m_oRequireCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"exec", &m_oExecCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"sys", &m_oSysCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
@@ -426,8 +505,8 @@ namespace ShellInterface {
 			}
 
 			//Unregister commands
-			this->m_pScriptInt->UnregisterCommand(L"shelldoc");
-			this->m_pScriptInt->UnregisterCommand(L"scriptdoc");
+			this->m_pScriptInt->UnregisterCommand(L"getscriptpath");
+			this->m_pScriptInt->UnregisterCommand(L"getscriptname");
 			this->m_pScriptInt->UnregisterCommand(L"require");
 			this->m_pScriptInt->UnregisterCommand(L"exec");
 			this->m_pScriptInt->UnregisterCommand(L"sys");

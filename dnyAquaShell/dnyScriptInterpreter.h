@@ -1448,8 +1448,10 @@ namespace dnyScriptInterpreter {
 			std::wstring wszFuncCode;
 		};
 
+	public:
 		typedef void (*TpfnStandardOutput)(const dnyString& wszOutputText);
 
+	private:
 		std::wstring m_wszScriptDirectory;
 		std::vector<internal_cmd_s> m_vInternalCmdList;
 		std::vector<functions_s> m_vFunctions;
