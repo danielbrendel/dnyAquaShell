@@ -457,6 +457,9 @@ namespace ShellInterface {
 			std::wstring wszConstStrVal = ((this->m_bInteractiveMode) ? L"true" : L"false");
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_IS_INTERACTIVE_MODE bool <= " + wszConstStrVal + L";");
 
+			//Register void variable in order to allow dropping result values
+			this->m_pScriptInt->ExecuteCode(L"declare void string;");
+
 			//Add further commands
 			#define SI_ADD_COMMAND(name, obj, type) if (!this->m_pScriptInt->RegisterCommand(name, obj, type)) { this->Free(); return false; }
 			SI_ADD_COMMAND(L"getscriptpath", &m_oCurrentScriptPathCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
@@ -513,6 +516,9 @@ namespace ShellInterface {
 			if (SI_FileExists(this->m_wszBaseDir + L"scripts\\unload.dnys")) {
 				this->m_pScriptInt->ExecuteScript(this->m_wszBaseDir + L"scripts\\unload.dnys");
 			}
+
+			//Unset void variable
+			this->m_pScriptInt->ExecuteCode(L"unset void;");
 
 			//Remove handler routine if set
 			if (this->m_bInteractiveMode) {
