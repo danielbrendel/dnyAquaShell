@@ -17,7 +17,8 @@ DLL plugins.
 * require (library) # Attempts to load a plugin library. Only needed when not running in interactive mode
 * exec (scriptfile) # Executes a script file
 * sys (string) (opt:storage var) # Attempts to run the expression as a windows command. If a result var is provided the output is stored in it, else the output gets echoed.
-* run (file) (args) (dir) # Attempts to launch a specified file 
+* run (file) (args) (dir) # Attempts to launch a specified file
+* pause # Pause current script execution
 * listlibs # Lists all shell plugin libraries
 * quit # Exists the shell
 

@@ -333,6 +333,20 @@ namespace ShellInterface {
 			}
 		} m_oRunCommand;
 
+		class IPauseCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
+		public:
+			IPauseCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				system("pause");
+
+				return true;
+			}
+		} m_oPauseCommand;
+
 		class IListLibsCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			IListLibsCommandInterface() {}
@@ -451,6 +465,7 @@ namespace ShellInterface {
 			SI_ADD_COMMAND(L"exec", &m_oExecCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"sys", &m_oSysCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"run", &m_oRunCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"pause", &m_oPauseCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"./", &m_oRunCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"listlibs", &m_oLibListCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"quit", &m_oExitCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
@@ -511,6 +526,7 @@ namespace ShellInterface {
 			this->m_pScriptInt->UnregisterCommand(L"exec");
 			this->m_pScriptInt->UnregisterCommand(L"sys");
 			this->m_pScriptInt->UnregisterCommand(L"run");
+			this->m_pScriptInt->UnregisterCommand(L"pause");
 			this->m_pScriptInt->UnregisterCommand(L"./");
 			this->m_pScriptInt->UnregisterCommand(L"listlibs");
 			this->m_pScriptInt->UnregisterCommand(L"exit");
