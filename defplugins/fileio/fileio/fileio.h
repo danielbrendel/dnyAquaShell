@@ -3,6 +3,8 @@
 #include "dnyas_sdk.h"
 #include <fstream>
 #include <Windows.h>
+#include <shlwapi.h>
+
 namespace FileIO {
 	IShellPluginAPI* pShellPluginAPI;
 	std::wstring wszBasePath;
@@ -335,7 +337,7 @@ namespace FileIO {
 
 	bool IsFolder(const std::wstring& wszObject)
 	{
-		return (GetFileAttributes(wszObject.c_str()) & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
+		return PathIsDirectory(wszObject.c_str());
 	}
 
 	dnyString GetCurDir(void)
