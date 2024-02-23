@@ -78,9 +78,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>E:\Projects\dnyAquaShell\interpreter;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>E:\Projects\dnyAquaShell\interpreter;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -139,13 +141,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dnyScriptInterpreter.cpp" />
+    <ClCompile Include="..\interpreter\dnyScriptInterpreter.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\interpreter\dnyScriptInterpreter.h" />
     <ClInclude Include="console.h" />
     <ClInclude Include="constants.h" />
-    <ClInclude Include="dnyScriptInterpreter.h" />
     <ClInclude Include="plugins.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
