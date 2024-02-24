@@ -1,11 +1,11 @@
 #dnyScriptInterpreter demo script file
 
-declare boolvar bool;
-declare intvar int;
-declare floatvar float;
-declare stringvar string;
-declare stringvar2 string;
-declare namestr string;
+global boolvar bool;
+global intvar int;
+global floatvar float;
+global stringvar string;
+global stringvar2 string;
+global namestr string;
 
 set boolvar <= true;
 set intvar <= 100;
@@ -65,7 +65,7 @@ for(i, 10, 0, -dec)
 	};
 };
 
-declare whilevar int;
+global whilevar int;
 set whilevar <= 0;
 while(%whilevar, -ls, 20)
 {
@@ -83,7 +83,7 @@ print "Script path: %namestr";
 getscriptname namestr;
 print "Script full name: %namestr";
 
-sys pause;
+pause;
 
 exit;
 

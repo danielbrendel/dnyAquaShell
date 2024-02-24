@@ -11,7 +11,7 @@
 /*
 	dnyScriptInterpreter developed by Daniel Brendel
 
-	(C) 2017 - 2022 by Daniel Brendel
+	(C) 2017 - 2024 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
@@ -289,7 +289,7 @@ namespace dnyScriptInterpreter {
 				return nullptr;
 
 			cvarptr_t pCVar = nullptr;
-
+			
 			//Allocate memory for cvar and instantiate class object according to type
 			switch (eType) {
 			case CT_BOOL:
@@ -308,10 +308,10 @@ namespace dnyScriptInterpreter {
 				return nullptr;
 				break;
 			}
-
+			
 			if (!pCVar)
 				return nullptr;
-
+			
 			return pCVar;
 		}
 
@@ -349,16 +349,16 @@ namespace dnyScriptInterpreter {
 
 			if (!wszName.length())
 				return nullptr;
-
+			
 			//Check if name is already in use
 			if (this->FindCVar(wszName))
 				return nullptr;
-
+			
 			//Spawn CVar object
 			cvarptr_t pCVar = SpawnCVar(wszName, eType, bConst);
 			if (!pCVar)
 				return nullptr;
-
+			
 			//Allocate cvar memory and add to list
 
 			cvar_s* pCVarData = new cvar_s;
@@ -366,7 +366,7 @@ namespace dnyScriptInterpreter {
 				delete pCVar;
 				return nullptr;
 			}
-
+			
 			pCVarData->pcvar = pCVar;
 			pCVarData->eType = eType;
 			pCVarData->wszName = wszName;
@@ -377,7 +377,7 @@ namespace dnyScriptInterpreter {
 				this->m_vCVars.insert(this->m_vCVars.begin() + 0, pCVarData); //Insert as first entry
 			else
 				this->m_vCVars.push_back(pCVarData); //Append to list
-
+			
 			return pCVar;
 		}
 
@@ -1989,17 +1989,38 @@ namespace dnyScriptInterpreter {
 		INTERNAL_COMMAND_HANDLER_METHOD(HandleVariableAssignment, 
 			//Handle variable assignment
 			
-			CHECK_VALID_ARGUMENT_COUNT(4);
+			//CHECK_VALID_ARGUMENT_COUNT(4);
 			
 			std::wstring wszVarName = pThis->ReplaceAllVariables(pContext->GetPartData(1));
-			std::wstring wszVarAllocator = pContext->GetPartData(2);
-			std::wstring wszVarValue = pThis->ReplaceAllVariables(pContext->GetPartData(3));
 
-			if (wszVarAllocator != L"<=")
+			std::wstring wszVarValue = L"";
+			bool bRegisterInContext = false;
+
+			std::wstring wszVarAllocatorOrType = pContext->GetPartData(2);
+			std::wstring wszCheckAllocator = wszVarAllocatorOrType;
+			if (wszVarAllocatorOrType != L"<=") {
+				wszVarValue = pThis->ReplaceAllVariables(pContext->GetPartData(4));
+				wszCheckAllocator = pContext->GetPartData(3);
+
+				bRegisterInContext = true;
+			} else {
+				wszVarValue = pThis->ReplaceAllVariables(pContext->GetPartData(3));
+			}
+
+			if (wszCheckAllocator != L"<=")
 				return false;
-			
+
 			cvartype_e eType = CT_UNKNOWN;
 			cvarptr_t pCvar = nullptr;
+
+			if (bRegisterInContext) {
+				size_t context = pThis->GetCurrentFunctionContext();
+				if (context != std::wstring::npos) {
+					pThis->RegisterLocalVariable(wszVarName, wszVarAllocatorOrType, false, context);
+				} else {
+					pThis->RegisterCVar(wszVarName, pThis->GetTypeFromString(wszVarAllocatorOrType), false, false);
+				}
+			}
 
 			localvar_s* pLocalVar = pThis->FindLocalVariablePtr(wszVarName, pThis->GetCurrentFunctionContext());
 			if (!pLocalVar) {
@@ -2397,7 +2418,7 @@ namespace dnyScriptInterpreter {
 		
 			//Parse parameters
 			std::vector<std::wstring> vParams = pThis->ParseArrayList(pContext->GetPartData(1));
-			if (vParams.size() != 4)
+			if ((vParams.size() < 4) || (vParams.size() > 5))
 				return false;
 
 			//Query arguments
@@ -2405,6 +2426,7 @@ namespace dnyScriptInterpreter {
 			dnyInteger iLoopStart = _wtoi64(pThis->ReplaceAllVariables(vParams[1]).c_str());
 			dnyInteger iLoopEnd = _wtoi64(pThis->ReplaceAllVariables(vParams[2]).c_str());
 			std::wstring wszLoopStep = vParams[3];
+			std::wstring wszLoopParam = (vParams.size() >= 5) ? vParams[4] : L"";
 
 			//Setup step-value
 			dnyInteger iLoopStep = 0;
@@ -2434,6 +2456,15 @@ namespace dnyScriptInterpreter {
 
 			//Perform loop
 			while (pVariable->GetValue() != iLoopEnd) { //Do while end value is not yet reached
+				//Execute loop code
+				pThis->ExecuteCode(pContext->GetPartData(2));
+
+				//Add step-value to variable
+				pVariable->SetValue(pVariable->GetValue() + iLoopStep);
+			}
+
+			//Process one more time so the loop is inclusive to the loop end value
+			if (wszLoopParam == L"-eq") {
 				//Execute loop code
 				pThis->ExecuteCode(pContext->GetPartData(2));
 
@@ -2957,7 +2988,7 @@ namespace dnyScriptInterpreter {
 			#define REG_INTERNAL_PREFIX(prefix, pfn) if (!this->AddCommandPrefix(prfix, pfn)) return false;
 
 			REG_INTERNAL_CMD(L"const", &oHandleConstantDeclaration);
-			REG_INTERNAL_CMD(L"declare", &oHandleVariableDeclaration);
+			REG_INTERNAL_CMD(L"global", &oHandleVariableDeclaration);
 			REG_INTERNAL_CMD(L"set", &oHandleVariableAssignment);
 			REG_INTERNAL_CMD(L"unset", &oHandleVariableRemoval);
 			REG_INTERNAL_CMD(L"function", &oHandleFunctionRegistration);

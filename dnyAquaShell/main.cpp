@@ -83,6 +83,19 @@ namespace ShellInterface {
 		return wszFullFileName;
 	}
 
+	std::wstring GetCurrentPath(void)
+	{
+		//Get current working path
+
+		wchar_t wszPath[MAX_PATH] = { 0 };
+
+		if (GetCurrentDirectory(sizeof(wszPath), wszPath)) {
+			return wszPath;
+		}
+
+		return L"";
+	}
+
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
 
 	class CExtendedScriptingInterface : public dnyScriptInterpreter::CScriptingInterface {
@@ -377,7 +390,11 @@ namespace ShellInterface {
 
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
-				const std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
+				std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
+
+				if (__pShellInterface__->m_bInteractiveMode) {
+					wszScriptName = GetCurrentPath() + L"\\" + wszScriptName;
+				}
 
 				this->SetResult(wszScriptName);
 
@@ -391,9 +408,10 @@ namespace ShellInterface {
 
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
-				const std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
-
-				this->SetResult(ExtractFilePath(wszScriptName));
+				std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
+				std::wstring wszScriptPath = (__pShellInterface__->m_bInteractiveMode) ? GetCurrentPath() : ExtractFilePath(wszScriptName);
+				
+				this->SetResult(wszScriptPath);
 
 				return true;
 			}
@@ -458,7 +476,7 @@ namespace ShellInterface {
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_IS_INTERACTIVE_MODE bool <= " + wszConstStrVal + L";");
 
 			//Register void variable in order to allow dropping result values
-			this->m_pScriptInt->ExecuteCode(L"declare void string;");
+			this->m_pScriptInt->ExecuteCode(L"global void string;");
 
 			//Add further commands
 			#define SI_ADD_COMMAND(name, obj, type) if (!this->m_pScriptInt->RegisterCommand(name, obj, type)) { this->Free(); return false; }

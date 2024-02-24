@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\interpreter\dnyScriptInterpreter.cpp">
+    <ClCompile Include="..\interpreter\src\dnyScriptInterpreter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\interpreter\dnyScriptInterpreter.h">
+    <ClInclude Include="..\interpreter\src\dnyScriptInterpreter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

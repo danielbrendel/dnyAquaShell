@@ -1,6 +1,6 @@
 # dnyScriptInterpreter developed by Daniel Brendel
 
-(C) 2017 - 2022 by Daniel Brendel
+(C) 2017 - 2024 by Daniel Brendel
 
 **Version**: 1.0\
 **Contact**: dbrendel1988(at)gmail(dot)com\
@@ -55,8 +55,10 @@ Comments are indicated by a #-character. Everything what follows
 a comment is ignored by the parser. 
 
 2) Declaring global and local variables
+
+Declare a global variable
 ```
-declare name type;
+global name type;
 ```
 There are the following system types available:
 - bool -> A boolean value (true and false)
@@ -65,9 +67,10 @@ There are the following system types available:
 - string -> A string
 Additionally custom variable data types can be used.
 A declaration then is applied as follows:
-declare name customtypename;
-Variables registered via 'declare' are always global variables. In order to use
-local temporary variables in functions you need to use the 'local' keyword. 
+```
+global name customtypename;
+```
+Local variables are declared as follows:
 ```
 local name datatype;
 ```
@@ -75,9 +78,20 @@ Local function variables are automatically removed after the function has finish
 If you have a local and a global variable with the same name then the local variable
 is prefered. As a result of that clean naming is advised.
 
+You can also initially declare a variable when setting a value. The context is then automatically determined:
+```
+function testfunc void()
+{
+	set context_local string <= "I am a local variable";
+};
+
+set context_global string <= "I am a global variable";
+```
+
+
 3) Assigning values to variables
 ```
-declare name1 int;
+global name1 int;
 set name1 <= 100;
 local name2 string;
 set name2 <= "This is a test";
@@ -158,7 +172,7 @@ To access methods or members inside the class context you can use %this.
 When accessing the class instance from outside you must prefix the class 
 instance identifier with an @ character except when accessing member variables.
 ```
-declare classInstance class;
+global classInstance class;
 set @classInstance <= MyTestClass;
 call @classInstance.SomeMethod() => void;
 set someVariable <= "%classInstance.MyVariable";
@@ -174,7 +188,7 @@ myCommand "stringarg"
 ```
 #A value-returning command:
 ```
-declare myStorageVar type;
+global myStorageVar type;
 myRetValCommand "stringarg" myStorageVar;
 ```
 For void-commands you need to implement the IVoidCommandInterface class and for
@@ -188,7 +202,7 @@ you should stick to the result-command interface. It supports all dny-data types
 ## Internal command reference:
 ```
 const constname consttype <= value; //Registers a constant with the given name, type and value\
-declare varname vartype; //Registers a global variable with the associated type\
+global varname vartype; //Registers a global variable with the associated type\
 set varname <= value; //Assigns a value to a global/local variable\
 unset varname; //Removes a global variable\
 function name rettype(paramters) {code} //Defines a function\
@@ -196,7 +210,7 @@ local varname vartype; //Registers a local function variable inside a function w
 result value; //Sets the result value of the associated function\
 call funcname(arguments) => resultvar; //Calls a function with paramters (if required) and stores the result (if required)\
 if (cond1, operation, cond2) {code}; <elseif (cond1, operation, cond2) {code}> <else {code}> //Performs an if-elseif-else evaluation. Elseif's and else's are optional. 'operation' can either be -eq(equal), -nt(not equal), -ls(less than), -lse(less than or equal), -gr(greater than) and -gre(greater than or equal).\
-for (varname, startvalue, endvalue, step) {code}; //Performs a for-loop with positive or negative values (use -inc for 1 and -dec for -1 or a step value)
+for (varname, startvalue, endvalue, step, opt:param) {code}; //Performs a for-loop with positive or negative values (use -inc for 1 and -dec for -1 or a step value. Param can be -eq if the loop var shall be inclusive to the loop end value, default behaviour is non-inclusive)
 while (cond1, operation, cond2) {code} //Performs a while-loop. 'operation' can either be -eq(equal), -nt(not equal), -ls(less than), -lse(less than or equal), -gr(greater than) and -gre(greater than or equal).\
 class name { code }; //Define a class structure
 method name rettype(parameters) { code }; //Implement a class method 
