@@ -378,20 +378,33 @@ namespace ShellInterface {
 
 				pContext->ReplaceAllVariables(pObjectInstance);
 
+				dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyInteger>* pCvarCount = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyInteger>*)__pShellInterface__->m_pScriptInt->RegisterCVar(L"argc", dnyScriptInterpreter::CVarManager::CT_INT, false, false);
+				if (pCvarCount) {
+					pCvarCount->SetValue(pContext->GetPartCount() - 1);
+				}
+
 				for (size_t i = 1; i < pContext->GetPartCount(); i++) {
 					std::wstring wszData = pContext->GetPartData(i);
 
-					dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pCvar = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(std::to_wstring(i), dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
-					if (pCvar) {
-						pCvar->SetValue(wszData);
+					dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(std::to_wstring(i - 1), dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
+					if (pCvarValue) {
+						pCvarValue->SetValue(wszData);
+					}
+
+					pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(L"argv[" + std::to_wstring(i - 1) + L"]", dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
+					if (pCvarValue) {
+						pCvarValue->SetValue(wszData);
 					}
 				}
 				
 				bool bResult = __pShellInterface__->m_pScriptInt->ExecuteScript(pContext->GetPartString(1));
 
 				for (size_t i = 1; i < pContext->GetPartCount(); i++) {
-					__pShellInterface__->m_pScriptInt->FreeCVar(std::to_wstring(i));
+					__pShellInterface__->m_pScriptInt->FreeCVar(std::to_wstring(i - 1));
+					__pShellInterface__->m_pScriptInt->FreeCVar(L"argv[" + std::to_wstring(i - 1) + L"]");
 				}
+
+				__pShellInterface__->m_pScriptInt->FreeCVar(L"argc");
 
 				return bResult;
 			}

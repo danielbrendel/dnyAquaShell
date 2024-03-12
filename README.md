@@ -44,12 +44,18 @@ pause;
 
 ## Basic commands:
 * require (library) # Attempts to load a plugin library. Only needed when not running in interactive mode
-* exec (scriptfile) (opt:args) # Executes a script file
+* exec (scriptfile) (opt:args) # Executes a script file. In the script use %argc for the argument count and %argv[n] for the actual argument value. Using %n, where n is the argument index value, is also possible.
 * sys (string) (opt:storage var) # Attempts to run the expression as a windows command. If a result var is provided the output is stored in it, else the output gets echoed.
 * run (file) (args) (dir) # Attempts to launch a specified file
 * pause # Pause current script execution
 * listlibs # Lists all shell plugin libraries
 * quit # Exists the shell
+
+## Helper constants and variables
+* DNYAS_IS_INTERACTIVE_MODE: Boolean value that indicates whether or not the current script code runs within the interactive mode
+* CR: Represents a carriage return character
+* LF: Represents a line feed character
+* void: Can be used with commands or functions if you want to dismiss the result value.
 
 ## Helper commands:
 * getscriptpath (result) # Stores the full path of the current executed script in the result var
@@ -81,7 +87,7 @@ aquashell path/to/script.dnys arg1 arg2 arg3 ... argN
 ```
 
 ## Plugin API:
-* Plugins must be written in compatibility with C++
+* Plugins must be written in compatibility with the shell application.
 * A plugin needs to export the functions 'dnyAS_PluginLoad' and 'dnyAS_PluginUnload'
 * The first one is called when the plugin gets loaded. There you must implement all
   loading stuff. The function recieves the current shell interface version, a pointer
