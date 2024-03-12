@@ -576,6 +576,10 @@ namespace ShellInterface {
 			std::wstring wszConstStrVal = ((this->m_bInteractiveMode) ? L"true" : L"false");
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_IS_INTERACTIVE_MODE bool <= " + wszConstStrVal + L";");
 
+			//Register new-line character constants
+			this->m_pScriptInt->ExecuteCode(L"const CR string <= \"\r\";");
+			this->m_pScriptInt->ExecuteCode(L"const LF string <= \"\n\";");
+
 			//Register void variable in order to allow dropping result values
 			this->m_pScriptInt->ExecuteCode(L"global void string;");
 
@@ -636,7 +640,7 @@ namespace ShellInterface {
 				this->m_pScriptInt->ExecuteScript(this->m_wszBaseDir + L"scripts\\unload.dnys");
 			}
 
-			//Unset void variable
+			//Unset void-variable
 			this->m_pScriptInt->ExecuteCode(L"unset void;");
 
 			//Remove handler routine if set

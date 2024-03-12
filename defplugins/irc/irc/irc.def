@@ -1,4 +1,4 @@
-LIBRARY ircframework
+LIBRARY irc
 EXPORTS
 	DllMain @ 1
 	dnyAS_PluginLoad @ 2

@@ -407,16 +407,16 @@ namespace NetClient {
 				break;
 			}
 			
-			if (!pClient->Connect(wszAddress, wszPort)) {
-				delete pClient;
-				return nullptr;
-			}
-			
 			netclients_s sClient;
 			sClient.pClient = pClient;
 			sClient.wszIdent = wszIdent;
 			sClient.eDataType = eDataType;
 			this->m_vClients.push_back(sClient);
+
+			if (!pClient->Connect(wszAddress, wszPort)) {
+				this->ReleaseClient(wszIdent);
+				return nullptr;
+			}
 
 			return pClient;
 		}
@@ -497,6 +497,14 @@ namespace NetClient {
 			}
 		}
 
+		void ProcessSockets(const std::wstring& wszIdent)
+		{
+			size_t uiItemId = this->FindClient(wszIdent);
+			if (uiItemId != std::wstring::npos) {
+				this->m_vClients[uiItemId].pClient->Process();
+			}
+		}
+
 		bool ReleaseClient(HNETCLIENT hNetClient)
 		{
 			size_t uiItemId = this->FindClient(hNetClient);
@@ -541,7 +549,6 @@ namespace NetClient {
 
 			return oNetClientMgr.SpawnClient(pContext->GetPartString(1), pContext->GetPartString(2), pContext->GetPartString(3), vOptions[0], vOptions[1]) != nullptr;
 		}
-
 	};
 
 	class IIsValidCommandInterface : public IResultCommandInterface<dnyBoolean> {
@@ -571,8 +578,14 @@ namespace NetClient {
 
 			pContext->ReplaceAllVariables(pInterfaceObject);
 
-			oNetClientMgr.ProcessSockets();
+			std::wstring wszIdent = pContext->GetPartString(1);
 
+			if (wszIdent.length() > 0) {
+				oNetClientMgr.ProcessSockets(wszIdent);
+			} else {
+				oNetClientMgr.ProcessSockets();
+			}
+			
 			return true;
 		}
 

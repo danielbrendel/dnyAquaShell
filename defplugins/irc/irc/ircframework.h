@@ -43,12 +43,12 @@ namespace IRCFramework {
 			memset(&sInitialAddrInfo, 0x00, sizeof(sInitialAddrInfo));
 			sInitialAddrInfo.ai_family = AF_UNSPEC;
 			sInitialAddrInfo.ai_socktype = this->m_iSockType;
-
+			
 			if (getaddrinfo(this->ConvertToAnsiString(wszAddress).c_str(), (wszPort.length() > 0) ? this->ConvertToAnsiString(wszPort).c_str() : nullptr, &sInitialAddrInfo, &pAdressInfoData) != 0) {
 				this->m_pEvents->OnError(this, WSAGetLastError());
 				return false;
 			}
-
+			
 			for (ADDRINFO* it = pAdressInfoData; it != nullptr; it = it->ai_next) {
 				this->m_hSocket = socket(it->ai_family, it->ai_socktype, it->ai_protocol);
 				if (this->m_hSocket == INVALID_SOCKET) continue;
@@ -63,12 +63,12 @@ namespace IRCFramework {
 
 				this->m_sSockAddr = *it->ai_addr;
 			}
-
+			
 			bool bResult = this->m_hSocket != INVALID_SOCKET;
 
 			if (!bResult)
 				this->m_pEvents->OnError(this, WSAGetLastError());
-
+			
 			freeaddrinfo(pAdressInfoData);
 
 			return bResult;
@@ -206,15 +206,15 @@ namespace IRCFramework {
 		{
 			if (!wszAddress.length())
 				return false;
-
+			
 			if ((this->m_iSockType != SOCK_STREAM) && (this->m_iSockType != SOCK_DGRAM))
 				return false;
-
+			
 			bool bResult = this->EstablishConnection(wszAddress, wszPort);
 
 			if (bResult)
 				this->m_pEvents->OnConnected(this);
-
+			
 			return bResult;
 		}
 
@@ -380,8 +380,6 @@ namespace IRCFramework {
 			}
 			return nullptr;
 		}
-
-
 	public:
 		CIRCClientMgr() : m_oMgrFrameworkAPI(this) {}
 		~CIRCClientMgr() { this->Release(); }
@@ -399,26 +397,25 @@ namespace IRCFramework {
 		{
 			if (!wszIdent.length())
 				return false;
-
+			
 			if (this->FindClient(wszIdent))
 				return false;
-
+			
 			CIrcClient* pClient = new CIrcClient(&this->m_oMgrFrameworkAPI);
 			if (!pClient)
 				return false;
 
-			if (!pClient->Connect(wszServer, wszPort)) {
-				delete pClient;
-				return false;
-			}
-
 			ircclient_s sClientData;
 			sClientData.pClient = pClient;
 			sClientData.wszIdent = wszIdent;
+
 			this->m_vClients.push_back(sClientData);
-
+			if (!pClient->Connect(wszServer, wszPort)) {
+				this->Remove(wszIdent);
+				return false;
+			}
+			
 			return true;
-
 		}
 
 		bool IsValid(const std::wstring& wszIdent)
@@ -430,6 +427,14 @@ namespace IRCFramework {
 		{
 			for (size_t i = 0; i < this->m_vClients.size(); i++) {
 				this->m_vClients[i].pClient->Process();
+			}
+		}
+
+		void Process(const std::wstring& wszIdent)
+		{
+			ircclient_s* pClient = this->FindClient(wszIdent);
+			if (pClient) {
+				pClient->pClient->Process();
 			}
 		}
 
@@ -499,7 +504,13 @@ namespace IRCFramework {
 
 			pContext->ReplaceAllVariables(pInterfaceObject);
 
-			oIRCClientMgr.Process();
+			std::wstring wszClient = pContext->GetPartString(1);
+
+			if (wszClient.length() > 0) {
+				oIRCClientMgr.Process(wszClient);
+			} else {
+				oIRCClientMgr.Process();
+			}
 
 			return true;
 		}

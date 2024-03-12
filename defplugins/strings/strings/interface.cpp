@@ -129,7 +129,7 @@ public:
 
 		std::wstring wszResult = L"";
 	
-		if ((wszStr.length()) && ((iStart > -1) && ((size_t)iStart < wszStr.length())) && ((iEnd > -1) && (iStart + iEnd > iStart) && ((size_t)iEnd < wszStr.length()))) {
+		if ((wszStr.length()) && ((iStart > -1) && ((size_t)iStart < wszStr.length())) && (((iEnd > -1) && (iStart + iEnd > iStart) && ((size_t)iEnd < wszStr.length())) || (iEnd == -1))) {
 			wszResult = wszStr.substr(iStart, iEnd);
 		}
 		
