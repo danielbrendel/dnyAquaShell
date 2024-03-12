@@ -62,16 +62,6 @@ namespace Console {
 				this->m_vAppArgs.push_back(argv[i]);
 			}
 
-			//Update console background and text color
-			this->SetDefaultColor();
-
-			//Print info text
-			std::wcout << L"==============================================================" << std::endl;
-			std::wcout << L"* " DNY_AS_PRODUCT_NAME L" (" DNY_AS_PRODUCT_CODENAME L") v" DNY_AS_PRODUCT_VERSION << std::endl;
-			std::wcout << L"* Developed by " DNY_AS_PRODUCT_AUTHOR L" (" DNY_AS_PRODUCT_CONTACT L")" << std::endl;
-			std::wcout << L"* Released under " DNY_AS_PRODUCT_LICENCE << std::endl;
-			std::wcout << L"==============================================================" << std::endl << std::endl;
-
 			return this->m_bReady = true;
 		}
 
@@ -105,11 +95,6 @@ namespace Console {
 		CConInterface() : m_bReady(false) {}
 		CConInterface(int argc, wchar_t* argv[]) : m_bReady(false) { this->Initialize(argc, argv); }
 		~CConInterface() { this->m_vAppArgs.clear(); this->m_bReady = false; }
-
-		void SetDefaultColor(void)
-		{
-			system("color 3E");
-		}
 
 		void SetColor(const std::string& color)
 		{

@@ -21,13 +21,26 @@
 namespace ShellInterface {
 	class CShellInterface* __pShellInterface__;
 
+	void PrintAboutInfo(void)
+	{
+		//Print about info
+
+		std::wcout << L"* " DNY_AS_PRODUCT_NAME L" (" DNY_AS_PRODUCT_CODENAME L") v" DNY_AS_PRODUCT_VERSION << std::endl;
+		std::wcout << L"* Developed by " DNY_AS_PRODUCT_AUTHOR L" (" DNY_AS_PRODUCT_CONTACT L")" << std::endl;
+		std::wcout << L"* Released under " DNY_AS_PRODUCT_LICENCE << std::endl;
+	}
+
 	void SI_StandardOutput(const std::wstring& wszText)
 	{
+		//Standard output handler
+
 		std::wcout << wszText << std::endl;
 	}
 
 	bool SI_FileExists(const std::wstring& wszFile)
 	{
+		//Check if a file exists
+
 		std::wifstream hFile;
 		hFile.open(wszFile, std::wifstream::in);
 		if (hFile.is_open()) {
@@ -40,6 +53,8 @@ namespace ShellInterface {
 
 	std::string SI_WStringToString(const std::wstring& wstr)
 	{
+		//Convert wide string to ansi string
+
 		using convert_typeX = std::codecvt_utf8<wchar_t>;
 		std::wstring_convert<convert_typeX, wchar_t> converterX;
 
@@ -48,6 +63,8 @@ namespace ShellInterface {
 
 	std::wstring system_exec(const std::wstring& wszCmd, bool echo = false)
 	{
+		//Perform system command and handle result accordingly
+
 		std::array<wchar_t, 128> buffer;
 		std::wstring result;
 
@@ -94,6 +111,80 @@ namespace ShellInterface {
 		}
 
 		return L"";
+	}
+
+	std::wstring GetFullShellPath(void)
+	{
+		//Get full shell path
+
+		wchar_t wszFullPath[1024] = { 0 };
+
+		GetModuleFileName(0, wszFullPath, sizeof(wszFullPath));
+			
+		return wszFullPath;
+	}
+
+	bool AddShellToPath(HKEY hContext, const std::wstring& wszKeyPath)
+	{
+		//Add shell to path
+
+		bool bResult = false;
+		HKEY hKey;
+
+		if (RegOpenKeyEx(hContext, wszKeyPath.c_str(), 0, KEY_QUERY_VALUE | KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+			wchar_t wszPathContent[1024] = { 0 };
+			DWORD dwDataSize = sizeof(wszPathContent);
+			DWORD dwType = REG_SZ;
+
+			if (RegQueryValueEx(hKey, L"Path", NULL, &dwType, (LPBYTE)wszPathContent, &dwDataSize) == ERROR_SUCCESS) {
+				std::wstring wszEnvPath = std::wstring(wszPathContent);
+				std::wstring wszFullShellPath = GetCurrentPath();
+
+				if (wszEnvPath.find(wszFullShellPath) == std::wstring::npos) {
+					std::wstring wszNewValue = wszEnvPath + L";" + wszFullShellPath;
+
+					if (RegSetValueEx(hKey, L"Path", NULL, REG_SZ, (BYTE*)wszNewValue.data(), (DWORD)(wszNewValue.size() * 2)) == ERROR_SUCCESS) {
+						SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)L"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
+
+						bResult = true;
+					}
+				}
+			}
+
+			RegCloseKey(hKey);
+
+			return bResult;
+		}
+
+		return bResult;
+	}
+
+	bool HandleCommandLineCommands(int argc, wchar_t* argv[])
+	{
+		//Handle special command line commands
+
+		if (argc <= 1) {
+			return false;
+		}
+
+		std::wstring wszCmd = std::wstring(argv[1]);
+		if (wszCmd == L"-v") {
+			PrintAboutInfo();
+
+			return true;
+		} else if (wszCmd == L"add_path") {
+			std::wstring wszContext = (argc == 3) ? argv[2] : L"-u";
+
+			if (wszContext == L"-u") {
+				((AddShellToPath(HKEY_CURRENT_USER, L"Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
+			} else if (wszContext == L"-m") {
+				((AddShellToPath(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
@@ -232,7 +323,7 @@ namespace ShellInterface {
 				return this->m_pScriptInt->RegisterCommand(wszCmdName, pCmdInterface, eType);
 			}
 
-			bool Cmd_UnregisterCommand(const std::wstring& wszCmdName)
+			virtual bool Cmd_UnregisterCommand(const std::wstring& wszCmdName)
 			{
 				return this->m_pScriptInt->UnregisterCommand(wszCmdName);
 			}
@@ -423,7 +514,7 @@ namespace ShellInterface {
 			
 			if (this->m_pShellInt)
 				return true;
-
+			
 			//Setup base directory
 
 			wchar_t wszFileName[MAX_PATH];
@@ -441,6 +532,16 @@ namespace ShellInterface {
 
 			//Set indicator
 			this->m_bInteractiveMode = (argc <= 1);
+
+			//Print info text if in interactive mode
+			if (this->m_bInteractiveMode) {
+				std::wcout << L"==============================================================" << std::endl;
+
+				PrintAboutInfo();
+
+				std::wcout << L"==============================================================" << std::endl << std::endl;
+
+			}
 
 			//Initialize console
 			this->m_pConsoleInt = new Console::CConInterface(argc, argv);
@@ -603,7 +704,7 @@ namespace ShellInterface {
 				if ((wszConsoleLine == L"<") && (!bInMulitLine)) { //Check for multiline mode indicator
 					bInMulitLine = true;
 					wszMultiLine = L"";
-					this->m_pConsoleInt->SetColor("B4");
+					this->m_pConsoleInt->SetColor("3E");
 					continue;
 				}
 
@@ -611,7 +712,7 @@ namespace ShellInterface {
 					if (wszConsoleLine == L">") { //Check for multiline close-mode indicator
 						this->m_pScriptInt->ExecuteCode(wszMultiLine); //Execute multiline code
 						bInMulitLine = false; //Clear indicator
-						this->m_pConsoleInt->SetDefaultColor();
+						this->m_pConsoleInt->SetColor("07");
 					} else {
 						wszMultiLine += wszConsoleLine; //Append to multiline string
 					}
@@ -659,13 +760,17 @@ namespace ShellInterface {
 int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
 	//Windows entry point
+	
+	if (ShellInterface::HandleCommandLineCommands(argc, argv)) {
+		return EXIT_SUCCESS;
+	}
 
 	ShellInterface::CShellInterface* pShellInterface = new ShellInterface::CShellInterface(argc, argv);
 	if (!pShellInterface) {
 		MessageBox(0, L"Failed to instantiate shell", DNY_AS_PRODUCT_NAME, MB_ICONERROR);
 		return EXIT_FAILURE;
 	}
-
+	
 	pShellInterface->Process();
 
 	delete pShellInterface;
