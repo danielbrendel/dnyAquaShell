@@ -823,7 +823,7 @@ namespace Automation {
 		void Process(void)
 		{
 			MSG sMsg;
-			if (GetMessage(&sMsg, NULL, 0, 0)) {
+			if (PeekMessage(&sMsg, NULL, 0, 0, PM_REMOVE)) {
 				TranslateMessage(&sMsg);
 				DispatchMessage(&sMsg);
 			}
