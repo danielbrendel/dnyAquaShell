@@ -2,6 +2,24 @@
 
 IShellPluginAPI* g_pShellPluginAPI;
 
+class ITimeStampCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	ITimeStampCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		std::time_t tm = std::time(nullptr);
+
+		IResultCommandInterface<dnyInteger>::SetResult(tm);
+
+		return true;
+	}
+} g_oTimeStampCommandInterface;
+
 class IFormatDateTimeCommandInterface : public IResultCommandInterface<dnyString> {
 public:
 	IFormatDateTimeCommandInterface() {}
@@ -27,7 +45,7 @@ public:
 
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
-	L"Datetime",
+	L"DateTime",
 	L"1.0",
 	L"Daniel Brendel",
 	L"dbrendel1988<at>gmail<dot>com",
@@ -53,6 +71,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
 	//Register example commands
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"timestamp", &g_oTimeStampCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"fmtdatetime", &g_oFormatDateTimeCommandInterface, CT_STRING);
 
 	return true;
@@ -62,6 +81,7 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"timestamp");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"fmtdatetime");
 }
 
