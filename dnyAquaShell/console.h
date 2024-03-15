@@ -28,7 +28,7 @@ namespace Console {
 		std::vector<std::wstring> m_vAppArgs;
 		bool m_bReady;
 
-		bool Initialize(int argc, wchar_t* argv[])
+		bool Initialize(const std::wstring& wszWorkingDir, int argc, wchar_t* argv[])
 		{
 			//Initialize component
 
@@ -39,20 +39,7 @@ namespace Console {
 			if (!SetConsoleTitle(DNY_AS_PRODUCT_NAME))
 				return false;
 
-			//Acquire current directory
-
-			wchar_t wszAppPath[MAX_PATH];
-			if (!GetModuleFileName(NULL, wszAppPath, sizeof(wszAppPath)))
-				return false;
-
-			for (size_t i = wcslen(wszAppPath); i > 0; i--) {
-				if (wszAppPath[i] == '\\')
-					break;
-
-				wszAppPath[i] = 0x0000;
-			}
-
-			this->m_wszCurrentDir = wszAppPath;
+			this->m_wszCurrentDir = wszWorkingDir;
 
 			//Set input prefix
 			this->m_wszCmdPrefix = DNY_AS_PRODUCT_NAME L" " + this->m_wszCurrentDir + L" > ";
@@ -93,7 +80,7 @@ namespace Console {
 		}
 	public:
 		CConInterface() : m_bReady(false) {}
-		CConInterface(int argc, wchar_t* argv[]) : m_bReady(false) { this->Initialize(argc, argv); }
+		CConInterface(const std::wstring& wszWorkingDir, int argc, wchar_t* argv[]) : m_bReady(false) { this->Initialize(wszWorkingDir, argc, argv); }
 		~CConInterface() { this->m_vAppArgs.clear(); this->m_bReady = false; }
 
 		void SetColor(const std::string& color)

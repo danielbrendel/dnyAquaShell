@@ -124,6 +124,19 @@ namespace ShellInterface {
 		return wszFullPath;
 	}
 
+	std::wstring GetWorkingDirectory(void)
+	{
+		//Get current working directory
+
+		wchar_t wszWorkingDir[1024] = { 0 };
+
+		if (GetCurrentDirectory(sizeof(wszWorkingDir), wszWorkingDir)) {
+			return std::wstring(wszWorkingDir);
+		}
+
+		return L"";
+	}
+
 	bool AddShellToPath(HKEY hContext, const std::wstring& wszKeyPath)
 	{
 		//Add shell to path
@@ -557,7 +570,7 @@ namespace ShellInterface {
 			}
 
 			//Initialize console
-			this->m_pConsoleInt = new Console::CConInterface(argc, argv);
+			this->m_pConsoleInt = new Console::CConInterface(GetWorkingDirectory(), argc, argv);
 			if (!this->m_pConsoleInt)
 				return false;
 
@@ -622,7 +635,7 @@ namespace ShellInterface {
 				for (int i = 1; i < argc; i++) {
 					std::wstring wszScriptFileName = argv[i];
 					if (wszScriptFileName.find(L":") == std::wstring::npos) {
-						wszScriptFileName = this->m_wszBaseDir + wszScriptFileName;
+						wszScriptFileName = GetWorkingDirectory() + L"\\" + wszScriptFileName;
 					}
 
 					this->m_pScriptInt->ExecuteScript(wszScriptFileName);
