@@ -156,29 +156,6 @@ public:
 
 } g_oGetTickCountCommandInterface;
 
-class IFormatDateTimeCommandInterface : public IResultCommandInterface<dnyString> {
-public:
-	IFormatDateTimeCommandInterface() {}
-
-	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
-	{
-		ICodeContext* pContext = (ICodeContext*)pCodeContext;
-
-		pContext->ReplaceAllVariables(pInterfaceObject);
-
-		wchar_t wcsDate[MAX_PATH];
-
-		std::wstring wszFormat = pContext->GetPartString(1);
-		std::time_t t = std::time(nullptr);
-		
-		std::wcsftime(wcsDate, sizeof(wcsDate), wszFormat.c_str(), std::localtime(&t));
-
-		IResultCommandInterface<dnyString>::SetResult(wcsDate);
-
-		return true;
-	}
-} g_oFormatDateTimeCommandInterface;
-
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
 	L"Miscutils",
@@ -220,7 +197,6 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"clpb_getstring", &g_oGetClipboardStringCommandInterface, CT_STRING);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"clpb_clear", &g_oClearClipboardCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"gettickcount", &g_oGetTickCountCommandInterface, CT_INT);
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"fmtdatetime", &g_oFormatDateTimeCommandInterface, CT_STRING);
 
 	return true;
 }
@@ -239,7 +215,6 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"clpb_getstring");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"clpb_clear");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"gettickcount");
-	g_pShellPluginAPI->Cmd_UnregisterCommand(L"fmtdatetime");
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)
