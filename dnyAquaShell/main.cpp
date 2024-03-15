@@ -548,6 +548,27 @@ namespace ShellInterface {
 			}
 		} m_oCurrentScriptPathCommand;
 
+		class IChangeWorkingDirCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
+		public:
+			IChangeWorkingDirCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pObjectInstance);
+
+				std::wstring wszNewDir = pContext->GetPartString(1);
+
+				BOOL bResult = SetCurrentDirectory(wszNewDir.c_str());
+				if (bResult) {
+					__pShellInterface__->m_pConsoleInt->UpdateWorkingDir(wszNewDir);
+				}
+
+				return bResult == TRUE;
+			}
+		} m_oChangeWorkingDirCommand;
+
 		bool Initialize(int argc, wchar_t* argv[])
 		{
 			//Initialize shell interface
@@ -627,6 +648,7 @@ namespace ShellInterface {
 			#define SI_ADD_COMMAND(name, obj, type) if (!this->m_pScriptInt->RegisterCommand(name, obj, type)) { this->Free(); return false; }
 			SI_ADD_COMMAND(L"getscriptpath", &m_oCurrentScriptPathCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"getscriptname", &m_oCurrentScriptNameCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
+			SI_ADD_COMMAND(L"cwd", &m_oChangeWorkingDirCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"require", &m_oRequireCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"exec", &m_oExecCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"sys", &m_oSysCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
@@ -691,6 +713,7 @@ namespace ShellInterface {
 			//Unregister commands
 			this->m_pScriptInt->UnregisterCommand(L"getscriptpath");
 			this->m_pScriptInt->UnregisterCommand(L"getscriptname");
+			this->m_pScriptInt->UnregisterCommand(L"cwd");
 			this->m_pScriptInt->UnregisterCommand(L"require");
 			this->m_pScriptInt->UnregisterCommand(L"exec");
 			this->m_pScriptInt->UnregisterCommand(L"sys");

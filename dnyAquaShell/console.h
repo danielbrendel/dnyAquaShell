@@ -39,10 +39,8 @@ namespace Console {
 			if (!SetConsoleTitle(DNY_AS_PRODUCT_NAME))
 				return false;
 
-			this->m_wszCurrentDir = wszWorkingDir;
-
-			//Set input prefix
-			this->m_wszCmdPrefix = DNY_AS_PRODUCT_NAME L" " + this->m_wszCurrentDir + L" > ";
+			//Update working directory and input prefix
+			this->UpdateWorkingDir(wszWorkingDir);
 
 			//Store application arguments
 			for (int i = 1; i < argc; i++) {
@@ -86,6 +84,12 @@ namespace Console {
 		void SetColor(const std::string& color)
 		{
 			system(std::string("color " + color).c_str());
+		}
+
+		void UpdateWorkingDir(const std::wstring& wszNewDir)
+		{
+			this->m_wszCurrentDir = wszNewDir;
+			this->m_wszCmdPrefix = DNY_AS_PRODUCT_NAME L" " + this->m_wszCurrentDir + L" > ";
 		}
 
 		bool Int_WriteLine(const std::wstring& wszTextLine) { return this->WriteLine(wszTextLine); }

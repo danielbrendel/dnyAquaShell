@@ -47,6 +47,7 @@ pause;
 * exec (scriptfile) (opt:args) # Executes a script file. In the script use %argc for the argument count and %argv[n] for the actual argument value. Using %n, where n is the argument index value, is also possible.
 * sys (string) (opt:storage var) # Attempts to run the expression as a windows command. If a result var is provided the output is stored in it, else the output gets echoed.
 * run (file) (args) (dir) # Attempts to launch a specified file
+* cwd (dir) # Changes the current working directory
 * pause # Pause current script execution
 * listlibs # Lists all shell plugin libraries
 * quit # Exists the shell
