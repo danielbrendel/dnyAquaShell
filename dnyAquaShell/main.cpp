@@ -368,6 +368,8 @@ namespace ShellInterface {
 			{
 				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 
+				pContext->ReplaceAllVariables(pObjectInstance);
+
 				if (__pShellInterface__->m_pPluginInt->PluginLoaded(__pShellInterface__->m_wszBaseDir + L"plugins\\" + pContext->GetPartString(1) + L".dll")) {
 					std::wcout << L"Required library \"" << pContext->GetPartString(1) << L"\" is already loaded" << std::endl;
 					return true;
@@ -507,6 +509,8 @@ namespace ShellInterface {
 
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
 				std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
 
 				if (__pShellInterface__->m_bInteractiveMode) {
@@ -525,6 +529,8 @@ namespace ShellInterface {
 
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
 				std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
 				std::wstring wszScriptPath = (__pShellInterface__->m_bInteractiveMode) ? GetCurrentPath() : ExtractFilePath(wszScriptName);
 				
