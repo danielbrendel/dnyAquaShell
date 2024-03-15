@@ -461,6 +461,8 @@ namespace ShellInterface {
 			{
 				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 
+				pContext->ReplaceAllVariables(pObjectInstance);
+
 				ShellExecute(0, L"open", pContext->GetPartString(1).c_str(), pContext->GetPartString(2).c_str(), pContext->GetPartString(3).c_str(), SW_SHOWNORMAL);
 
 				return true;
