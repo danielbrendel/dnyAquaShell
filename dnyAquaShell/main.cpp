@@ -754,6 +754,8 @@ namespace ShellInterface {
 		}
 
 		void ShutdownShell(void) { this->m_bShallRun = false; }
+
+		const bool IsInInteractiveMode(void) const { return this->m_bInteractiveMode; }
 	};
 
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType)
@@ -761,7 +763,13 @@ namespace ShellInterface {
 		//Handle console control events
 		
 		if ((dwCtrlType == CTRL_C_EVENT) || (dwCtrlType == CTRL_BREAK_EVENT)) {
-			std::wcout << std::endl;
+			//Only shutdown when not in interactive mode
+			if (!__pShellInterface__->IsInInteractiveMode()) {
+				__pShellInterface__->ShutdownShell();
+			} else {
+				std::wcout << std::endl;
+			}
+			
 			return TRUE;
 		}
 
