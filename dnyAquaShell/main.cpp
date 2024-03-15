@@ -433,6 +433,8 @@ namespace ShellInterface {
 			{
 				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 
+				pContext->ReplaceAllVariables(pObjectInstance);
+
 				std::wstring wszVar = pContext->GetPartString(2);
 				std::wstring wszResult = system_exec(pContext->GetPartString(1), wszVar.length() == 0);
 
