@@ -87,17 +87,33 @@ aquashell path/to/script.dnys arg1 arg2 arg3 ... argN
 ```
 
 ## Plugin API:
-* Plugins must be written in compatibility with the shell application.
-* A plugin needs to export the functions 'dnyAS_PluginLoad' and 'dnyAS_PluginUnload'
-* The first one is called when the plugin gets loaded. There you must implement all
-  loading stuff. The function recieves the current shell interface version, a pointer
-  to the plugin API class instance and a pointer to a plugin information structure
-  where the plugin should save its information strings. If everything goes well then
-  the plugin must return true, otherwise false.
-* The latter one is called when the plugin gets unloaded. There you can implement
-  all cleanup stuff. 
-* Please refer to the demo plugin sourcecode in order to view a full documented example
+Plugins must be written in compatibility with the shell application. 
 
+A plugin needs to export the functions `dnyAS_PluginLoad` and `dnyAS_PluginUnload`.
+
+```cpp
+bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, plugininfo_s* pPluginInfos);
+void dnyAS_PluginUnload(void);
+```
+The first one is called when the plugin gets loaded. There you must implement all loading stuff. The function recieves the current shell interface version, a pointer to the plugin API class instance and a pointer to a plugin information structure where the plugin should save its information strings. If everything goes well then the plugin must return true, otherwise false.
+
+Here is an example of a plugin info struct object.
+
+```cpp
+plugininfo_s g_sPluginInfos = {
+	L"Plugin name",
+	L"1.0",
+	L"Author name",
+	L"Contact info",
+	L"Plugin description"
+};
+```
+
+The latter one is called when the plugin gets unloaded. There you can implement all cleanup stuff. 
+
+Please refer to the demo plugin sourcecode in order to view a full documented example.
+
+## Interpreter
 This software is using dnyScriptInterpreter v1.0 developed by Daniel Brendel.
 Please refer to the script interpreter [readme](interpreter/README.md) for more details.
 
