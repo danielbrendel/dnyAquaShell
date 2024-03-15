@@ -515,6 +515,8 @@ namespace ShellInterface {
 			{
 				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
 
+				pContext->ReplaceAllVariables(pObjectInstance);
+
 				std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
 
 				if (__pShellInterface__->m_bInteractiveMode) {
@@ -534,6 +536,8 @@ namespace ShellInterface {
 			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
 			{
 				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pObjectInstance);
 
 				std::wstring wszScriptName = __pShellInterface__->m_pScriptInt->GetCurrentScript();
 				std::wstring wszScriptPath = (__pShellInterface__->m_bInteractiveMode) ? GetCurrentPath() : ExtractFilePath(wszScriptName);
