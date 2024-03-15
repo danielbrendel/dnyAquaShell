@@ -2,11 +2,11 @@
 
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
-	L"IRCFramework",
+	L"IRC",
 	L"1.0",
 	L"Daniel Brendel",
 	L"dbrendel1988<at>gmail<dot>com",
-	L"IRC Framework manager"
+	L"IRC client component"
 };
 
 bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, plugininfo_s* pPluginInfos)
