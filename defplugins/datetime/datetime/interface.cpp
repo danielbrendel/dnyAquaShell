@@ -34,6 +34,10 @@ public:
 
 		std::wstring wszFormat = pContext->GetPartString(1);
 		std::time_t t = std::time(nullptr);
+		
+		if (pContext->GetPartCount() >= 4) {
+			t = pContext->GetPartInt(2);
+		}
 
 		std::wcsftime(wcsDate, sizeof(wcsDate), wszFormat.c_str(), std::localtime(&t));
 
