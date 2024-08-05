@@ -21,6 +21,12 @@
 namespace ShellInterface {
 	class CShellInterface* __pShellInterface__;
 
+	struct exec_argument_stack_s {
+		dnyScriptInterpreter::dnyInteger argc;
+		std::vector<dnyScriptInterpreter::dnyString> argv;
+	};
+	std::vector<exec_argument_stack_s> vExecArgumentStack;
+
 	void PrintAboutInfo(void)
 	{
 		//Print about info
@@ -393,33 +399,78 @@ namespace ShellInterface {
 
 				pContext->ReplaceAllVariables(pObjectInstance);
 
-				dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyInteger>* pCvarCount = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyInteger>*)__pShellInterface__->m_pScriptInt->RegisterCVar(L"argc", dnyScriptInterpreter::CVarManager::CT_INT, false, false);
+				exec_argument_stack_s current_stack_item;
+
+				dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyInteger>* pCvarCount = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyInteger>*)__pShellInterface__->m_pScriptInt->FindCVar(L"argc");
+				if (!pCvarCount) {
+					pCvarCount = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyInteger>*)__pShellInterface__->m_pScriptInt->RegisterCVar(L"argc", dnyScriptInterpreter::CVarManager::CT_INT, false, false);
+				}
+
 				if (pCvarCount) {
 					pCvarCount->SetValue(pContext->GetPartCount() - 1);
+					current_stack_item.argc = pCvarCount->GetValue();
 				}
 
 				for (size_t i = 1; i < pContext->GetPartCount(); i++) {
 					std::wstring wszData = pContext->GetPartData(i);
 
-					dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(std::to_wstring(i - 1), dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
+					dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->FindCVar(std::to_wstring(i - 1));
+					if (!pCvarValue) {
+						pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(std::to_wstring(i - 1), dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
+					}
+
 					if (pCvarValue) {
 						pCvarValue->SetValue(wszData);
 					}
 
-					pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(L"argv[" + std::to_wstring(i - 1) + L"]", dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
+					pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->FindCVar(L"argv[" + std::to_wstring(i - 1) + L"]");
+					if (!pCvarValue) {
+						pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->RegisterCVar(L"argv[" + std::to_wstring(i - 1) + L"]", dnyScriptInterpreter::CVarManager::CT_STRING, false, false);
+					}
+
 					if (pCvarValue) {
 						pCvarValue->SetValue(wszData);
+
+						current_stack_item.argv.push_back(wszData);
 					}
 				}
+
+				vExecArgumentStack.push_back(current_stack_item);
 				
 				bool bResult = __pShellInterface__->m_pScriptInt->ExecuteScript(pContext->GetPartString(1));
 
-				for (size_t i = 1; i < pContext->GetPartCount(); i++) {
-					__pShellInterface__->m_pScriptInt->FreeCVar(std::to_wstring(i - 1));
-					__pShellInterface__->m_pScriptInt->FreeCVar(L"argv[" + std::to_wstring(i - 1) + L"]");
-				}
+				vExecArgumentStack.erase(vExecArgumentStack.begin() + vExecArgumentStack.size() - 1);
+				
+				if (vExecArgumentStack.size()) {
+					pCvarCount->SetValue(vExecArgumentStack[vExecArgumentStack.size() - 1].argc);
 
-				__pShellInterface__->m_pScriptInt->FreeCVar(L"argc");
+					for (size_t i = 1; i < pContext->GetPartCount(); i++) {
+						dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->FindCVar(std::to_wstring(i - 1));
+						if (pCvarValue) {
+							if (i <= vExecArgumentStack[vExecArgumentStack.size() - 1].argv.size()) {
+								pCvarValue->SetValue(vExecArgumentStack[vExecArgumentStack.size() - 1].argv[i - 1]);
+							} else {
+								pCvarValue->SetValue(std::to_wstring(i - 1));
+							}
+						}
+
+						pCvarValue = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)__pShellInterface__->m_pScriptInt->FindCVar(L"argv[" + std::to_wstring(i - 1) + L"]");
+						if (pCvarValue) {
+							if (i <= vExecArgumentStack[vExecArgumentStack.size() - 1].argv.size()) {
+								pCvarValue->SetValue(vExecArgumentStack[vExecArgumentStack.size() - 1].argv[i - 1]);
+							} else {
+								pCvarValue->SetValue(L"argv[" + std::to_wstring(i - 1) + L"]");
+							}
+						}
+					}
+				} else {
+					for (size_t i = 1; i < pContext->GetPartCount(); i++) {
+						__pShellInterface__->m_pScriptInt->FreeCVar(std::to_wstring(i - 1));
+						__pShellInterface__->m_pScriptInt->FreeCVar(L"argv[" + std::to_wstring(i - 1) + L"]");
+					}
+
+					__pShellInterface__->m_pScriptInt->FreeCVar(L"argc");
+				}
 
 				return bResult;
 			}
