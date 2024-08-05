@@ -1,4 +1,4 @@
-LIBRARY textinput
+LIBRARY input
 EXPORTS
 	DllMain @ 1
 	dnyAS_PluginLoad @ 2

@@ -1,9 +1,5 @@
 #pragma once
 
-/* 
-	InputBox for Windows developed by Daniel Brendel 
-*/
-
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>

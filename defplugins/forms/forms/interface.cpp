@@ -60,6 +60,25 @@ public:
 
 } g_oSetFormResCommandInterface;
 
+class ISetFormTitleCommandInterface : public IVoidCommandInterface {
+public:
+	ISetFormTitleCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		return pForm->SetText(pContext->GetPartString(2));
+	}
+
+} g_oSetFormTitleCommandInterface;
+
 class ISetCompPosCommandInterface : public IVoidCommandInterface {
 public:
 	ISetCompPosCommandInterface() {}
@@ -1251,6 +1270,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawnform", &g_oSpawnFormCommand, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformpos", &g_oSetFormPosCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformres", &g_oSetFormResCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformtitle", &g_oSetFormTitleCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcomppos", &g_oSetCompPosCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcompres", &g_oSetCompResCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcomptext", &g_oSetCompTextCommandInterface, CT_VOID);
@@ -1312,6 +1332,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnform");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformpos");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformres");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformtitle");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcomppos");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcompres");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcomptext");

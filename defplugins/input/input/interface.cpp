@@ -1,10 +1,11 @@
 #include "dnyas_sdk.h"
+#include "inputbox.h"
 
 IShellPluginAPI* g_pShellPluginAPI;
 
-class IInputVoidCommandInterface : public IVoidCommandInterface {
+class IInputCliVoidCommandInterface : public IVoidCommandInterface {
 public:
-	IInputVoidCommandInterface() {}
+	IInputCliVoidCommandInterface() {}
 
 	virtual bool CommandCallback(void* pArg1, void* pArg2)
 	{
@@ -26,16 +27,16 @@ public:
 
 		std::wstring wszInput;
 		std::getline(std::wcin, wszInput);
-		
+
 		pCvar->SetValue(wszInput);
 
 		return true;
 	}
-} g_oInputResultCommand;
+} g_oInputCliResultCommand;
 
-class ISetInputVoidCommandInterface : public IVoidCommandInterface {
+class IInputBoxCommandInterface : public IResultCommandInterface<dnyString> {
 public:
-	ISetInputVoidCommandInterface() {}
+	IInputBoxCommandInterface() {}
 
 	virtual bool CommandCallback(void* pArg1, void* pArg2)
 	{
@@ -43,34 +44,28 @@ public:
 
 		pCodeContext->ReplaceAllVariables(pArg2);
 
-		ICVar<dnyString>* pCvar = (ICVar<dnyString>*)g_pShellPluginAPI->Cv_FindCVar(pCodeContext->GetPartString(1));
-		if (!pCvar) {
-			pCvar = (ICVar<dnyString>*)g_pShellPluginAPI->Cv_RegisterCVar(pCodeContext->GetPartString(1), CT_STRING);
-			if (!pCvar)
-				return false;
+		std::wstring wszResult(L"");
+
+		InputBox::InputBoxHandle hInputBox = InputBox::Spawn(pCodeContext->GetPartString(1), pCodeContext->GetPartString(2), pCodeContext->GetPartString(3), (int)pCodeContext->GetPartInt(4), (int)pCodeContext->GetPartInt(5));
+		if (InputBox::IsValid(hInputBox)) {
+			InputBox::Show(hInputBox);
+			wszResult = InputBox::Text(hInputBox);
+			InputBox::Free(hInputBox);
 		}
 
-		std::wstring wszQueryText = pCodeContext->GetPartString(2);
-		if (wszQueryText.length()) {
-			std::wcout << wszQueryText;
-		}
-
-		std::wstring wszInput;
-		std::getline(std::wcin, wszInput);
-		
-		pCvar->SetValue(wszInput);
+		IResultCommandInterface<dnyString>::SetResult(wszResult);
 
 		return true;
 	}
-} g_oSetInputResultCommand;
+} g_oInputBoxCommandInterface;
 
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
-	L"TextInput",
+	L"Input",
 	L"1.0",
 	L"Daniel Brendel",
 	L"dbrendel1988<at>gmail<dot>com",
-	L"Text input query plugin"
+	L"Input provider plugin"
 };
 
 bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, plugininfo_s* pPluginInfos)
@@ -91,9 +86,9 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
-	//Register example commands
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"input", &g_oInputResultCommand, CT_VOID);
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"setinput", &g_oSetInputResultCommand, CT_VOID);
+	//Register command
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"input", &g_oInputCliResultCommand, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"inputbox", &g_oInputBoxCommandInterface, CT_STRING);
 
 	return true;
 }
@@ -103,7 +98,7 @@ void dnyAS_PluginUnload(void)
 	//Called when plugin gets unloaded
 
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"input");
-	g_pShellPluginAPI->Cmd_UnregisterCommand(L"setinput");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"inputbox");
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)

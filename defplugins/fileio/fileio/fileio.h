@@ -120,8 +120,6 @@ namespace FileIO {
 	class CFileIO {
 	private:
 		struct file_context_s {
-			std::wstring wszHandleVar;
-			ICVar<dnyInteger>* pVar;
 			CFileContext* pContext;
 		};
 
@@ -132,11 +130,11 @@ namespace FileIO {
 		CFileIO() {}
 		~CFileIO() {}
 
-		bool LoadFile(const std::wstring& wszFileName, const std::wstring& wszHandleVarName, bool bAppend, FHANDLE* phFileOut = nullptr)
+		FHANDLE LoadFile(const std::wstring& wszFileName, bool bAppend)
 		{
-			if ((!wszFileName.length()) || (!wszHandleVarName.length()))
+			if (!wszFileName.length())
 				return false;
-
+			
 			file_context_s sContext;
 			sContext.pContext = new CFileContext(wszFileName, bAppend);
 			if (!sContext.pContext)
@@ -147,29 +145,16 @@ namespace FileIO {
 				return false;
 			}
 			
-			sContext.wszHandleVar = wszHandleVarName;
-
-			sContext.pVar = (ICVar<dnyInteger>*)pShellPluginAPI->Cv_RegisterCVar(wszHandleVarName, CT_INT);
-			if (!sContext.pVar) {
-				delete sContext.pContext;
-				return false;
-			}
-
-			sContext.pVar->SetValue((dnyInteger)this->m_vFileContexts.size());
-
 			this->m_vFileContexts.push_back(sContext);
 
-			if (phFileOut)
-				*phFileOut = this->m_vFileContexts.size() - 1;
-
-			return true;
+			return this->m_vFileContexts.size() - 1;
 		}
 
 		bool IsOpen(const FHANDLE hFile)
 		{
 			if (!this->IsValidHandle(hFile))
 				return false;
-
+			
 			return this->m_vFileContexts[hFile].pContext->IsOpen();
 		}
 
@@ -223,7 +208,6 @@ namespace FileIO {
 			this->m_vFileContexts[hFile].pContext->Close();
 			
 			delete this->m_vFileContexts[hFile].pContext;
-			pShellPluginAPI->Cv_FreeCVar(this->m_vFileContexts[hFile].wszHandleVar);
 
 			this->m_vFileContexts.erase(this->m_vFileContexts.begin() + hFile);
 
@@ -383,7 +367,7 @@ namespace FileIO {
 		return MoveFile(wszSrc.c_str(), wszDst.c_str()) == TRUE;
 	}
 
-	class ILoadFileCommandInterface : public IVoidCommandInterface {
+	class ILoadFileCommandInterface : public IResultCommandInterface<dnyInteger> {
 	public:
 		ILoadFileCommandInterface() {}
 
@@ -393,23 +377,12 @@ namespace FileIO {
 
 			pCodeContext->ReplaceAllVariables(pArg2);
 
-			std::vector<std::wstring> vParams = pCodeContext->GetPartArray(1);
-			if (vParams.size() != 3)
-				return false;
+			std::wstring wszTargetFile = pCodeContext->GetPartString(1);
+			bool bAppend = pCodeContext->GetPartBool(2);
 
-			FHANDLE hFile;
+			FHANDLE hFile = oFileIO.LoadFile(wszTargetFile, bAppend);
 
-			bool bAppend = (vParams[2] == L"true") ? true : false;
-
-			if (!oFileIO.LoadFile(vParams[1], vParams[0], bAppend, &hFile))
-				return false;
-			
-			std::wstring wszCode = pCodeContext->GetPartString(2);
-			if (wszCode.length()) {
-				//oFileIO.Seek(hFile, 0);
-				pShellPluginAPI->Scr_ExecuteCode(wszCode);
-				oFileIO.CloseFile(hFile);
-			}
+			IResultCommandInterface<dnyInteger>::SetResult((dnyInteger)hFile);
 
 			return true;
 		}
@@ -423,6 +396,8 @@ namespace FileIO {
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
 			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
+
+			pCodeContext->ReplaceAllVariables(pArg2);
 
 			FHANDLE hFile = (FHANDLE)pCodeContext->GetPartInt(1);
 
@@ -440,6 +415,8 @@ namespace FileIO {
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
 			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
+
+			pCodeContext->ReplaceAllVariables(pArg2);
 
 			FHANDLE hFile = (FHANDLE)pCodeContext->GetPartInt(1);
 
@@ -695,7 +672,7 @@ namespace FileIO {
 		pShellPluginAPI = pInterface;
 
 		#define REG_CMD(n, ptr, type) if (!pShellPluginAPI->Cmd_RegisterCommand(n, ptr, type)) return false;
-		REG_CMD(L"fopen", &oLoadFileCommandInterface, CT_VOID);
+		REG_CMD(L"fopen", &oLoadFileCommandInterface, CT_INT);
 		REG_CMD(L"fisopen", &oIsOpenCommandInterface, CT_BOOL);
 		REG_CMD(L"fateof", &oEofCommandInterface, CT_BOOL);
 		REG_CMD(L"fwritetext", &oWriteTextCommandInterface, CT_VOID);

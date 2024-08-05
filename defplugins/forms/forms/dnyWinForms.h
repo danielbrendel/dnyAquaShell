@@ -466,6 +466,12 @@ namespace dnyWinForms {
 
 			return false;
 		}
+		bool SetText(const std::wstring& wszText)
+		{
+			//Update window text
+
+			return SetWindowText(this->m_hWindow, wszText.c_str());
+		}
 		void SignalRelease(void) { this->m_bSignalRelease = true; }
 
 		//Getters
