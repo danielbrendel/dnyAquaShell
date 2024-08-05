@@ -668,16 +668,40 @@ namespace ShellInterface {
 
 			//Handle arguments as scripts if provided
 			if (!this->m_bInteractiveMode) {
-				for (int i = 1; i < argc; i++) {
-					std::wstring wszScriptFileName = argv[i];
-					if (wszScriptFileName.find(L":") == std::wstring::npos) {
-						wszScriptFileName = GetWorkingDirectory() + L"\\" + wszScriptFileName;
-					}
+				if (argc > 1) {
+					std::wstring wszArgCmd = argv[1];
 
-					this->m_pScriptInt->ExecuteScript(wszScriptFileName);
+					if (wszArgCmd == L"-e") {
+						std::wstring wszExecScript = (argc >= 3) ? argv[2] : L"";
+						if (wszExecScript.length() > 0) {
+							if (wszExecScript.find(L":") == std::wstring::npos) {
+								wszExecScript = GetWorkingDirectory() + L"\\" + wszExecScript;
+							}
 
-					if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
-						std::wcout << L"** Error **\n" << wszScriptFileName << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
+							std::wstring wszExecArgs = L"";
+							for (int i = 3; i < argc; i++) {
+								wszExecArgs += L" \"" + std::wstring(argv[i]) + L"\"";
+							}
+							
+							this->m_pScriptInt->ExecuteCode(L"exec \"" + wszExecScript + L"\"" + wszExecArgs + L";");
+
+							if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
+								std::wcout << L"** Error **\n" << wszExecScript << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
+							}
+						} else {
+							std::wcout << L"** Error ** No script input provided" << std::endl;
+						}
+					} else if (wszArgCmd == L"-c") {
+						std::wstring wszExecCode = (argc >= 3) ? argv[2] : L"";
+						if (wszExecCode.length() > 0) {
+							this->m_pScriptInt->ExecuteCode(wszExecCode);
+
+							if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
+								std::wcout << L"** Error **\n" << wszExecCode << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
+							}
+						} else {
+							std::wcout << L"** Error ** No code input provided" << std::endl;
+						}
 					}
 				}
 			} else { 

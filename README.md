@@ -78,13 +78,16 @@ pause;
 
 The following command line arguments exist:
 
-* "-v": Prints out the version information
-* "add_path" "-u|-m": Adds the shell path to your PATH environment variable. Use -u for current user or -m for local machine.
-* "path/to/a/script.dnys": If the argument is an existing script file, then the shell will try to execute it.
+* -v: Prints out the version information
+* -e "path/to/a/script.dnys" [opt:args]: If an existing script file is provided, then the shell will try to execute it.
+* -c "script code": Execute script code that is provided as an argument.
 
-If you have added the shell path to your environment PATH variable, then you can also execute scripts as follows:
+You can also add the shell path to your PATH environment variable using the following command line system command:
+* "add_path" "-u|-m": Adds the shell path to your PATH environment variable. Use -u for current user or -m for local machine.
+
+If you have added the shell path to your environment PATH variable, then you can also perform actions as follows:
 ```
-aquashell path/to/script.dnys arg1 arg2 arg3 ... argN
+aquashell [args]
 ```
 
 ## Plugin API:
