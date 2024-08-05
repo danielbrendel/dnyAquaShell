@@ -658,13 +658,13 @@ namespace ShellInterface {
 			SI_ADD_COMMAND(L"listlibs", &m_oLibListCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"quit", &m_oExitCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 
+			//Store class instance pointer
+			__pShellInterface__ = this;
+
 			//Execute init-script if exists
 			if (SI_FileExists(this->m_wszBaseDir + L"scripts\\init.dnys")) {
 				this->m_pScriptInt->ExecuteScript(this->m_wszBaseDir + L"scripts\\init.dnys");
 			}
-
-			//Store class instance pointer
-			__pShellInterface__ = this;
 
 			//Handle arguments as scripts if provided
 			if (!this->m_bInteractiveMode) {
