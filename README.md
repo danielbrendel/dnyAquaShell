@@ -43,11 +43,12 @@ pause;
 ```
 
 ## Basic commands:
-* require (library) # Attempts to load a plugin library. Only needed when not running in interactive mode
+* require (library) # Attempts to load a plugin library. Only needed when not running in interactive mode. Use `__ALL__` to load all available plugins.
 * exec (scriptfile) (opt:args) # Executes a script file. In the script use %argc for the argument count and %argv[n] for the actual argument value. Using %n, where n is the argument index value, is also possible.
 * sys (string) (opt:storage var) # Attempts to run the expression as a windows command. If a result var is provided the output is stored in it, else the output gets echoed.
 * run (file) (args) (dir) # Attempts to launch a specified file
 * cwd (dir) # Changes the current working directory
+* gwd (result var) # Stores the current working directory in the result var
 * pause # Pause current script execution
 * listlibs # Lists all shell plugin libraries
 * quit # Exists the shell
@@ -61,6 +62,12 @@ pause;
 ## Helper commands:
 * getscriptpath (result) # Stores the full path of the current executed script in the result var
 * getscriptname (result) # Stores the full file name of the current executed script in the result var
+* textview (file) # Prints the text contents of the file to the standard output
+* random (start) (end) (result var) # Generates a random number within the range and stores it to the result var
+* sleep (milliseconds) # Pauses the main thread for N milliseconds
+* gettickcount (result var) # Stores the number  of milliseconds that have elapsed since system start into the result var
+* getsystemerror (result var) # Stores the last system error code of the shell process context into the result var
+* setsystemerror (code) # Sets the last system error code of the shell process context
 
 ## Multiline support:
 * \< # Opens the editor in multiline mode

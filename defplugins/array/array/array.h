@@ -4,350 +4,6 @@
 
 namespace Array {
 	IShellPluginAPI* pShellPluginAPI;
-	ICVar<dnyInteger>* pCommonArrayIndex = nullptr;
-
-	/* Static array manager */
-	class CStaticArray {
-	private:
-		struct static_array_object {
-			cvartype_e eType;
-			std::wstring wszBaseName;
-			std::vector<cvarptr_t> vpCVars;
-		};
-
-		std::vector<static_array_object> m_vStaticArrays;
-
-		cvarptr_t RegisterArrayItem(const std::wstring& wszBaseName, const size_t uiIndex, const cvartype_e eType, const std::wstring& wszValue)
-		{
-			//Register an array item
-
-			if (!wszBaseName.length())
-				return nullptr;
-
-			//Setup item var name
-			std::wstring wszItemVarName = wszBaseName + L"[" + std::to_wstring(uiIndex) + L"]";
-
-			//Check if name is already in use
-			if (pShellPluginAPI->Cv_FindCVar(wszItemVarName))
-				return nullptr;
-
-			//Register CVar to engine
-			cvarptr_t pCVar = pShellPluginAPI->Cv_RegisterCVar(wszItemVarName, eType);
-			if (!pCVar)
-				return nullptr;
-
-			//Set var value
-			switch (eType) {
-			case CT_BOOL: {
-				ICVar<dnyBoolean>* pBoolCVar = (ICVar<dnyBoolean>*)pCVar;
-				pBoolCVar->SetValue((wszValue == L"true") ? true : false);
-				break;
-			}
-			case CT_INT: {
-				ICVar<dnyInteger>* pIntCVar = (ICVar<dnyInteger>*)pCVar;
-				pIntCVar->SetValue(_wtoi64(wszValue.c_str()));
-				break;
-			}
-			case CT_FLOAT: {
-				ICVar<dnyFloat>* pFloatCVar = (ICVar<dnyFloat>*)pCVar;
-				pFloatCVar->SetValue(_wtof(wszValue.c_str()));
-				break;
-			}
-			case CT_STRING: {
-				ICVar<dnyString>* pStringCVar = (ICVar<dnyString>*)pCVar;
-				pStringCVar->SetValue(wszValue);
-				break;
-			}
-			default: {
-				pShellPluginAPI->Cv_FreeCVar(wszItemVarName);
-				return nullptr;
-				break;
-			}
-			}
-
-			return pCVar;
-		}
-
-		bool FindArray(const std::wstring& wszBaseName, size_t* puiIndexOut = nullptr)
-		{
-			//Find array in list
-
-			for (size_t i = 0; i < this->m_vStaticArrays.size(); i++) {
-				if (this->m_vStaticArrays[i].wszBaseName == wszBaseName) {
-					if (puiIndexOut)
-						*puiIndexOut = i;
-
-					return true;
-				}
-			}
-
-			return false;
-		}
-	public:
-		CStaticArray() {}
-		~CStaticArray() { this->Clear(); }
-
-		bool RegisterArray(const std::wstring& wszBaseName, const cvartype_e eType, const std::vector<std::wstring>& vItemValueList)
-		{
-			//Register array
-
-			if ((!wszBaseName.length()) || (eType == CT_VOID) || (!vItemValueList.size()))
-				return false;
-
-			//Check if an array with given name already exists
-			if (this->FindArray(wszBaseName))
-				return false;
-
-			//Setup data struct
-			static_array_object sObject;
-			sObject.wszBaseName = wszBaseName;
-			sObject.eType = eType;
-
-			//Register array items
-			for (size_t i = 0; i < vItemValueList.size(); i++) {
-				cvarptr_t pArrayItem = this->RegisterArrayItem(wszBaseName, i, eType, vItemValueList[i]);
-				if (!pArrayItem)
-					return false;
-
-				sObject.vpCVars.push_back(pArrayItem);
-			}
-
-			//Register array length variable
-
-			ICVar<dnyInteger>* pLenVar = (ICVar<dnyInteger>*)pShellPluginAPI->Cv_RegisterCVar(wszBaseName + L".length", CT_INT);
-			if (!pLenVar)
-				return false;
-
-			pLenVar->SetValue(vItemValueList.size());
-
-			//Add object to list
-			this->m_vStaticArrays.push_back(sObject);
-
-			return true;
-
-		}
-
-		bool StoreArrayItemValueToTarget(const std::wstring& wszBaseName, const size_t uiIndex, cvarptr_t pTargetVar)
-		{
-			//Store array item value to target variable
-
-			if ((!wszBaseName.length()) || (!pTargetVar))
-				return false;
-
-			size_t uiArrayId;
-			
-			//Find array object
-			if (!this->FindArray(wszBaseName, &uiArrayId))
-				return false;
-
-			//Check index with size
-			if (uiIndex >= this->m_vStaticArrays[uiArrayId].vpCVars.size())
-				return false;
-
-			//Store value
-			switch (this->m_vStaticArrays[uiArrayId].eType) {
-			case CT_BOOL: {
-				ICVar<dnyBoolean>* pTargetCVar = (ICVar<dnyBoolean>*)pTargetVar;
-				ICVar<dnyBoolean>* pItemVar = (ICVar<dnyBoolean>*)this->m_vStaticArrays[uiArrayId].vpCVars[uiIndex];
-				pTargetCVar->SetValue(pItemVar->GetValue());
-				break;
-			}
-			case CT_INT: {
-				ICVar<dnyInteger>* pTargetCVar = (ICVar<dnyInteger>*)pTargetVar;
-				ICVar<dnyInteger>* pItemVar = (ICVar<dnyInteger>*)this->m_vStaticArrays[uiArrayId].vpCVars[uiIndex];
-				pTargetCVar->SetValue(pItemVar->GetValue());
-				break;
-			}
-			case CT_FLOAT: {
-				ICVar<dnyFloat>* pTargetCVar = (ICVar<dnyFloat>*)pTargetVar;
-				ICVar<dnyFloat>* pItemVar = (ICVar<dnyFloat>*)this->m_vStaticArrays[uiArrayId].vpCVars[uiIndex];
-				pTargetCVar->SetValue(pItemVar->GetValue());
-				break;
-			}
-			case CT_STRING: {
-				ICVar<dnyString>* pTargetCVar = (ICVar<dnyString>*)pTargetVar;
-				ICVar<dnyString>* pItemVar = (ICVar<dnyString>*)this->m_vStaticArrays[uiArrayId].vpCVars[uiIndex];
-				pTargetCVar->SetValue(pItemVar->GetValue());
-				break;
-			}
-			default:
-				return false;
-			}
-
-			return true;
-		}
-
-		bool StoreArrayItemValueToTarget(const std::wstring& wszBaseName, const std::wstring& wszIndexVar, cvarptr_t pTargetVar)
-		{
-			//Store array item value to target variable
-
-			if ((!wszBaseName.length()) || (!pTargetVar))
-				return false;
-
-			size_t uiArrayId;
-
-			//Find array object
-			if (!this->FindArray(wszBaseName, &uiArrayId))
-				return false;
-
-			//Get index variable
-			ICVar<dnyInteger>* pIndexCVar = (ICVar<dnyInteger>*)pShellPluginAPI->Cv_FindCVar(wszIndexVar);
-			if (!pIndexCVar)
-				return false;
-
-			//Check index with size
-			if ((size_t)pIndexCVar->GetValue() >= this->m_vStaticArrays[uiArrayId].vpCVars.size())
-				return false;
-
-			//Store value
-			switch (this->m_vStaticArrays[uiArrayId].eType) {
-			case CT_BOOL: {
-				ICVar<dnyBoolean>* pTargetCVar = (ICVar<dnyBoolean>*)pTargetVar;
-				ICVar<dnyBoolean>* pItemVar = (ICVar<dnyBoolean>*)this->m_vStaticArrays[uiArrayId].vpCVars[(size_t)pIndexCVar->GetValue()];
-				pTargetCVar->SetValue(pItemVar->GetValue());
-				break;
-			}
-			case CT_INT: {
-				ICVar<dnyInteger>* pTargetCVar = (ICVar<dnyInteger>*)pTargetVar;
-				ICVar<dnyInteger>* pItemVar = (ICVar<dnyInteger>*)this->m_vStaticArrays[uiArrayId].vpCVars[(size_t)pIndexCVar->GetValue()];
-				pTargetCVar->SetValue(pItemVar->GetValue());
-				break;
-			}
-			case CT_FLOAT: {
-				ICVar<dnyFloat>* pTargetCVar = (ICVar<dnyFloat>*)pTargetVar;
-				ICVar<dnyFloat>* pItemVar = (ICVar<dnyFloat>*)this->m_vStaticArrays[uiArrayId].vpCVars[(size_t)pIndexCVar->GetValue()];
-				pTargetCVar->SetValue(pItemVar->GetValue());
-				break;
-			}
-			case CT_STRING: {
-				ICVar<dnyString>* pTargetCVar = (ICVar<dnyString>*)pTargetVar;
-				ICVar<dnyString>* pItemVar = (ICVar<dnyString>*)this->m_vStaticArrays[uiArrayId].vpCVars[(size_t)pIndexCVar->GetValue()];
-				pTargetCVar->SetValue(pItemVar->GetValue());
-				break;
-			}
-			default:
-				return false;
-			}
-
-			return true;
-		}
-
-		bool RemoveArray(const std::wstring& wszBaseName)
-		{
-			//Remove array
-
-			size_t uiListId;
-
-			//Find in list
-			if (!this->FindArray(wszBaseName, &uiListId))
-				return false;
-
-			//Remove engine variables
-			for (size_t i = 0; i < this->m_vStaticArrays[uiListId].vpCVars.size(); i++)
-				pShellPluginAPI->Cv_FreeCVar(this->m_vStaticArrays[uiListId].wszBaseName + L"[" + std::to_wstring(i) + L"]");
-
-			//Remove length variable
-			pShellPluginAPI->Cv_FreeCVar(this->m_vStaticArrays[uiListId].wszBaseName + L".length");
-
-			//Remove from list
-			this->m_vStaticArrays.erase(this->m_vStaticArrays.begin() + uiListId);
-
-			return true;
-		}
-
-		void Clear(void)
-		{
-			//Clear resources
-
-			for (size_t i = 0; i < this->m_vStaticArrays.size(); i++) {
-				for (size_t j = 0; j < this->m_vStaticArrays[i].vpCVars.size(); j++)
-					pShellPluginAPI->Cv_FreeCVar(this->m_vStaticArrays[i].wszBaseName + L"[" + std::to_wstring(j) + L"]");
-
-				pShellPluginAPI->Cv_FreeCVar(this->m_vStaticArrays[i].wszBaseName + L".length");
-			}
-
-			this->m_vStaticArrays.clear();
-		}
-	} oStaticArray;
-
-	class IAddStaticArrayCommand : public IVoidCommandInterface {
-	public:
-		IAddStaticArrayCommand() {}
-
-		virtual bool CommandCallback(void* pArg1, void* pArg2)
-		{
-			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
-
-			pCodeContext->ReplaceAllVariables(pArg2);
-
-			std::wstring wszArrayName = pCodeContext->GetPartString(1);
-			if (!wszArrayName.length())
-				return false;
-
-			std::wstring wszDataType = pCodeContext->GetPartString(2);
-			if (!wszDataType.length())
-				return false;
-
-			std::vector<std::wstring> vItemList = pCodeContext->GetPartArray(3);
-			if (!vItemList.size())
-				return false;
-
-			cvartype_e eType = CT_VOID;
-
-			if (wszDataType == L"bool") {
-				eType = CT_BOOL;
-			}
-			else if (wszDataType == L"int") {
-				eType = CT_INT;
-			}
-			else if (wszDataType == L"float") {
-				eType = CT_FLOAT;
-			}
-			else if (wszDataType == L"string") {
-				eType = CT_STRING;
-			}
-			else {
-				return false;
-			}
-
-			return oStaticArray.RegisterArray(wszArrayName, eType, vItemList);
-		}
-
-	} oAddStaticArrayVoidCommand;
-
-	class IStoreStaticArrayItemCommand : public IVoidCommandInterface {
-	public:
-		IStoreStaticArrayItemCommand() {}
-
-		virtual bool CommandCallback(void* pArg1, void* pArg2)
-		{
-			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
-
-			pCodeContext->ReplaceAllVariables(pArg2);
-
-			std::vector<dnyString> vParams = pCodeContext->GetPartArray(1);
-			if (vParams.size() != 3)
-				return false;
-
-			cvarptr_t pTargetVar = pShellPluginAPI->Cv_FindCVar(vParams[2]);
-
-			return oStaticArray.StoreArrayItemValueToTarget(vParams[0], vParams[1], pTargetVar);
-		}
-
-	} oStoreStaticArrayItemVoidCommand;
-
-	class IRemoveStaticArrayCommand : public IVoidCommandInterface {
-	public:
-		IRemoveStaticArrayCommand() {}
-
-		virtual bool CommandCallback(void* pArg1, void* pArg2)
-		{
-			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
-
-			return oStaticArray.RemoveArray(pCodeContext->GetPartString(1));
-		}
-
-	} oRemoveStaticArrayVoidCommand;
 
 	class CDynamicArray {
 	public:
@@ -811,6 +467,37 @@ namespace Array {
 			//Append item
 			return this->Insert(wszBaseName, this->m_vObjects[uiArrayId].vArrayItems.size(), wszExpression);
 		}
+
+		bool Remove(const std::wstring& wszBaseName, const dnyInteger iIndex)
+		{
+			//Remove specific item from array
+
+			size_t uiArrayId;
+
+			//Find array
+			if (!this->FindArray(wszBaseName, &uiArrayId))
+				return false;
+
+			//Validate index
+			if ((size_t)iIndex >= this->m_vObjects[uiArrayId].vArrayItems.size())
+				return false;
+
+			//Move items one step backward at index
+			for (size_t i = (size_t)iIndex; i < this->m_vObjects[uiArrayId].vArrayItems.size(); i++) {
+				this->StoreArrayItemValueToTarget(wszBaseName, i + 1, this->m_vObjects[uiArrayId].vArrayItems[i]);
+			}
+
+			//Free top variable
+			pShellPluginAPI->Cv_FreeCVar(wszBaseName + L"[" + std::to_wstring(this->m_vObjects[uiArrayId].pLenVar->GetValue() - 1) + L"]");
+
+			//Remove top item
+			this->m_vObjects[uiArrayId].vArrayItems.erase(this->m_vObjects[uiArrayId].vArrayItems.begin() + this->m_vObjects[uiArrayId].vArrayItems.size() - 1);
+
+			//Update length value
+			this->m_vObjects[uiArrayId].pLenVar->SetValue(this->m_vObjects[uiArrayId].pLenVar->GetValue() - 1);
+
+			return true;
+		}
 	} oDynamicArray;
 
 	class IRegisterDynamicArray : public IVoidCommandInterface {
@@ -834,8 +521,6 @@ namespace Array {
 			dnyInteger iInitialSize = pCodeContext->GetPartInt(3);
 
 			std::vector<std::wstring> vItemList = pCodeContext->GetPartArray(4);
-			if (!vItemList.size())
-				return false;
 
 			cvartype_e eType = CT_VOID;
 
@@ -954,6 +639,21 @@ namespace Array {
 
 	} oAppendItem;
 
+	class IRemoveItem : public IVoidCommandInterface {
+	public:
+		IRemoveItem() {}
+
+		virtual bool CommandCallback(void* pArg1, void* pArg2)
+		{
+			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
+
+			pCodeContext->ReplaceAllVariables(pArg2);
+
+			return oDynamicArray.Remove(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2));
+		}
+
+	} oRemoveItem;
+
 	class IRemoveDynamicArray : public IVoidCommandInterface {
 	public:
 		IRemoveDynamicArray() {}
@@ -967,81 +667,6 @@ namespace Array {
 
 	} oRemoveDynamicArray;
 
-	class ICommonArraySetIndex : public IVoidCommandInterface {
-	public:
-		ICommonArraySetIndex() {}
-
-		virtual bool CommandCallback(void* pArg1, void* pArg2)
-		{
-			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
-
-			pCodeContext->ReplaceAllVariables(pArg2);
-
-			pCommonArrayIndex->SetValue(pCodeContext->GetPartInt(1));
-
-			return true;
-		}
-
-	} oCommonArraySetIndex;
-
-	class IForEach : public IVoidCommandInterface {
-	public:
-		IForEach() {}
-
-		virtual bool CommandCallback(void* pArg1, void* pArg2)
-		{
-			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
-
-			pCodeContext->ReplaceAllVariables(pArg2);
-
-			std::vector<dnyString> vArgs = pCodeContext->GetPartArray(1);
-			if (vArgs.size() != 2)
-				return false;
-
-			const CDynamicArray::dynamic_array_object* pData = oDynamicArray.GetArrayData(vArgs[1]);
-			if (!pData)
-				return false;
-
-			cvarptr_t pCvar = pShellPluginAPI->Cv_RegisterCVar(vArgs[0], pData->eType);
-			if (!pCvar)
-				return false;
-
-			for (size_t i = 0; i < pData->vArrayItems.size(); i++) {
-				switch (pData->eType) {
-				case CT_BOOL: {
-					ICVar<dnyBoolean>* pVar = (ICVar<dnyBoolean>*)pCvar;
-					pVar->SetValue(((ICVar<dnyBoolean>*)pData->vArrayItems[i])->GetValue());
-					break;
-				}
-				case CT_INT: {
-					ICVar<dnyInteger>* pVar = (ICVar<dnyInteger>*)pCvar;
-					pVar->SetValue(((ICVar<dnyInteger>*)pData->vArrayItems[i])->GetValue());
-					break;
-				}
-				case CT_FLOAT: {
-					ICVar<dnyFloat>* pVar = (ICVar<dnyFloat>*)pCvar;
-					pVar->SetValue(((ICVar<dnyFloat>*)pData->vArrayItems[i])->GetValue());
-					break;
-				}
-				case CT_STRING: {
-					ICVar<dnyString>* pVar = (ICVar<dnyString>*)pCvar;
-					pVar->SetValue(((ICVar<dnyString>*)pData->vArrayItems[i])->GetValue());
-					break;
-				}
-				default:
-					return false;
-				}
-
-				pShellPluginAPI->Scr_ExecuteCode(pCodeContext->GetPartString(2));
-			}
-
-			pShellPluginAPI->Cv_FreeCVar(vArgs[0]);
-
-			return true;
-		}
-
-	} oForEach;
-
 	bool Initialize(IShellPluginAPI* pInstance)
 	{
 		//Initialize Array interface
@@ -1054,24 +679,15 @@ namespace Array {
 
 		//Register commands
 		#define REG_CMD(n, ptr, type) if (!pShellPluginAPI->Cmd_RegisterCommand(n, ptr, type)) return false;
-		REG_CMD(L"static_array", &oAddStaticArrayVoidCommand, CT_VOID);
-		REG_CMD(L"store_array_item_s", &oStoreStaticArrayItemVoidCommand, CT_VOID);
-		REG_CMD(L"free_array_s", &oRemoveStaticArrayVoidCommand, CT_VOID);
-		REG_CMD(L"dynamic_array", &oRegisterDynamicArray, CT_VOID);
-		REG_CMD(L"store_array_item_d", &oSetDynamicArrayItem, CT_VOID);
-		REG_CMD(L"store_item_to_array_d", &oSaveToDynamicArrayItem, CT_VOID);
-		REG_CMD(L"copy_array_item_d", &oCopyDynamicArrayItem, CT_VOID);
+		REG_CMD(L"array", &oRegisterDynamicArray, CT_VOID);
+		REG_CMD(L"store_array_item", &oSetDynamicArrayItem, CT_VOID);
+		REG_CMD(L"store_item_to_array", &oSaveToDynamicArrayItem, CT_VOID);
+		REG_CMD(L"copy_array_item", &oCopyDynamicArrayItem, CT_VOID);
 		REG_CMD(L"resize_array", &oResizeDynamicArray, CT_VOID);
 		REG_CMD(L"item_insert", &oInsertItem, CT_VOID);
 		REG_CMD(L"item_append", &oAppendItem, CT_VOID);
-		REG_CMD(L"free_array_d", &oRemoveDynamicArray, CT_VOID);
-		REG_CMD(L"asetindex", &oCommonArraySetIndex, CT_VOID);
-		REG_CMD(L"foreach", &oForEach, CT_VOID);
-
-		//Register index variable
-		pCommonArrayIndex = (ICVar<dnyInteger>*)pShellPluginAPI->Cv_RegisterCVar(L"array_index", CT_INT);
-		if (!pCommonArrayIndex)
-			return false;
+		REG_CMD(L"item_remove", &oRemoveItem, CT_VOID);
+		REG_CMD(L"free_array", &oRemoveDynamicArray, CT_VOID);
 
 		return true;
 	}
@@ -1082,25 +698,15 @@ namespace Array {
 
 		//Unegister commands
 		#define UNREG_CMD(n) if (!pShellPluginAPI->Cmd_UnregisterCommand(n)) return false;
-		UNREG_CMD(L"static_array");
-		UNREG_CMD(L"store_array_item_s");
-		UNREG_CMD(L"free_array_s");
-		UNREG_CMD(L"dynamic_array");
-		UNREG_CMD(L"store_array_item_d");
-		UNREG_CMD(L"store_item_to_array_d");
-		UNREG_CMD(L"copy_array_item_d");
+		UNREG_CMD(L"array");
+		UNREG_CMD(L"store_array_item");
+		UNREG_CMD(L"store_item_to_array");
+		UNREG_CMD(L"copy_array_item");
 		UNREG_CMD(L"resize_array");
 		UNREG_CMD(L"item_insert");
 		UNREG_CMD(L"item_append");
-		UNREG_CMD(L"free_array_d");
-		UNREG_CMD(L"asetindex");
-		UNREG_CMD(L"foreach");
-
-		//Undeclare index variable
-		pShellPluginAPI->Cv_FreeCVar(L"array_index");
-
-		//Clear class object resources
-		oStaticArray.Clear();
+		UNREG_CMD(L"item_remove");
+		UNREG_CMD(L"free_array");
 
 		return true;
 	}

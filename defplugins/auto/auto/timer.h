@@ -1,22 +1,16 @@
 #pragma once
 
 #include "dnyas_sdk.h"
+#include <Windows.h>
 #include <time.h>
 #include <fstream>
 
-namespace Utils {
-	IShellPluginAPI* pShellPluginAPI;
+namespace Timer {
+	IShellPluginAPI* pShellPluginAPI = nullptr;
 
-	bool Initialize(IShellPluginAPI* pInterface)
+	void Init(IShellPluginAPI* pInterface)
 	{
-		if (!pInterface)
-			return false;
-
-		pShellPluginAPI = pInterface;
-
-		srand((unsigned int)time(NULL));
-
-		return true;
+		Timer::pShellPluginAPI = pInterface;
 	}
 
 	class CTimer {
@@ -151,56 +145,5 @@ namespace Utils {
 	bool TimerExists(const std::wstring& wszTimer)
 	{
 		return oTimerMgr.NameAlreadyInUse(wszTimer);
-	}
-
-	class CTextFilePrinter {
-	private:
-		bool m_bLastOpResult;
-		std::wifstream m_hFile;
-	public:
-		CTextFilePrinter() : m_bLastOpResult(false) {}
-		CTextFilePrinter(const std::wstring& wszFile) : m_bLastOpResult(false) { this->Print(wszFile); }
-		~CTextFilePrinter() {}
-
-		bool Print(const std::wstring& wszFile)
-		{
-			this->m_bLastOpResult = false;
-
-			if (!wszFile.length())
-				return this->m_bLastOpResult;
-
-			this->m_hFile.open(wszFile, std::wifstream::in);
-			if (this->m_hFile.is_open()) {
-				std::wstring wszCurrentLine;
-				size_t uiLineCounter = 0;
-
-				while (!this->m_hFile.eof()) {
-					std::getline(this->m_hFile, wszCurrentLine);
-					uiLineCounter++;
-
-					std::wcout << L"(#" << uiLineCounter << L") " << wszCurrentLine << std::endl;
-				}
-
-				this->m_hFile.close();
-
-				this->m_bLastOpResult = true;
-			}
-
-			return this->m_bLastOpResult;
-		}
-
-		inline const bool GetLastResult(void) const { return this->m_bLastOpResult; }
-	};
-
-	dnyInteger Random(dnyInteger begin, dnyInteger end)
-	{
-		dnyInteger iRange = end - begin;
-
-		return rand() % (int)iRange;
-	}
-
-	void Sleep(dnyInteger iMsecs)
-	{
-		::Sleep((DWORD)iMsecs);
 	}
 }

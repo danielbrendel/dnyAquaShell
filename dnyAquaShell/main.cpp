@@ -361,6 +361,45 @@ namespace ShellInterface {
 			Console::CConInterface* m_pConInt;
 		} *m_pShellInt;
 
+		class CTextFilePrinter {
+		private:
+			bool m_bLastOpResult;
+			std::wifstream m_hFile;
+		public:
+			CTextFilePrinter() : m_bLastOpResult(false) {}
+			CTextFilePrinter(const std::wstring& wszFile) : m_bLastOpResult(false) { this->Print(wszFile); }
+			~CTextFilePrinter() {}
+
+			bool Print(const std::wstring& wszFile)
+			{
+				this->m_bLastOpResult = false;
+
+				if (!wszFile.length())
+					return this->m_bLastOpResult;
+
+				this->m_hFile.open(wszFile, std::wifstream::in);
+				if (this->m_hFile.is_open()) {
+					std::wstring wszCurrentLine;
+					size_t uiLineCounter = 0;
+
+					while (!this->m_hFile.eof()) {
+						std::getline(this->m_hFile, wszCurrentLine);
+						uiLineCounter++;
+
+						std::wcout << L"(#" << uiLineCounter << L") " << wszCurrentLine << std::endl;
+					}
+
+					this->m_hFile.close();
+
+					this->m_bLastOpResult = true;
+				}
+
+				return this->m_bLastOpResult;
+			}
+
+			inline const bool GetLastResult(void) const { return this->m_bLastOpResult; }
+		};
+
 		bool m_bInteractiveMode;
 		bool m_bShallRun;
 		std::wstring m_wszBaseDir;
@@ -626,6 +665,128 @@ namespace ShellInterface {
 			}
 		} m_oChangeWorkingDirCommand;
 
+		class IGetWorkingDirCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyString> {
+		public:
+			IGetWorkingDirCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pObjectInstance)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pObjectInstance);
+
+				TCHAR wszCurrentDir[2048];
+
+				DWORD dwResult = GetCurrentDirectory(sizeof(wszCurrentDir), wszCurrentDir);
+
+				this->SetResult(wszCurrentDir);
+
+				return dwResult != 0;
+			}
+		} m_oGetWorkingDirCommand;
+
+		class ITextFilePrinterCommandInterface : dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
+		public:
+			ITextFilePrinterCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				CTextFilePrinter oFilePrinter(pContext->GetPartString(1));
+
+				return oFilePrinter.GetLastResult();
+			}
+
+		} g_oTextFilePrinterCommandInterface;
+
+		class IRandomCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
+		public:
+			IRandomCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				dnyScriptInterpreter::dnyInteger iBegin = pContext->GetPartInt(1);
+				dnyScriptInterpreter::dnyInteger iEnd = pContext->GetPartInt(2);
+				
+				dnyScriptInterpreter::dnyInteger iRange = iEnd - iBegin;
+
+				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(rand() % (int)iRange);
+
+				return true;
+			}
+		} g_oRandomCommandInterface;
+
+		class ISleepCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
+		public:
+			ISleepCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				Sleep((DWORD)pContext->GetPartInt(1));
+
+				return true;
+			}
+
+		} g_oSleepCommandInterface;
+
+		class IGetTickCountCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
+		public:
+			IGetTickCountCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(GetTickCount64());
+
+				return true;
+			}
+
+		} g_oGetTickCountCommandInterface;
+
+		class IGetSystemErrorCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
+		public:
+			IGetSystemErrorCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(GetLastError());
+
+				return true;
+			}
+
+		} g_oGetSystemErrorCommandInterface;
+
+		class ISetSystemErrorCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
+		public:
+			ISetSystemErrorCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				SetLastError((DWORD)pContext->GetPartInt(1));
+
+				return true;
+			}
+
+		} g_oSetSystemErrorCommandInterface;
+
 		bool Initialize(int argc, wchar_t* argv[])
 		{
 			//Initialize shell interface
@@ -647,6 +808,9 @@ namespace ShellInterface {
 			}
 
 			this->m_wszBaseDir = wszFileName;
+
+			//Random seed generation
+			srand((unsigned int)time(NULL));
 
 			//Set indicator
 			this->m_bInteractiveMode = (argc <= 1);
@@ -705,7 +869,14 @@ namespace ShellInterface {
 			#define SI_ADD_COMMAND(name, obj, type) if (!this->m_pScriptInt->RegisterCommand(name, obj, type)) { this->Free(); return false; }
 			SI_ADD_COMMAND(L"getscriptpath", &m_oCurrentScriptPathCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"getscriptname", &m_oCurrentScriptNameCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
+			SI_ADD_COMMAND(L"textview", &g_oTextFilePrinterCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"random", &g_oRandomCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
+			SI_ADD_COMMAND(L"sleep", &g_oSleepCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"gettickcount", &g_oGetTickCountCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
+			SI_ADD_COMMAND(L"getsystemerror", &g_oGetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
+			SI_ADD_COMMAND(L"setsystemerror", &g_oSetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"cwd", &m_oChangeWorkingDirCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"gwd", &m_oGetWorkingDirCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"require", &m_oRequireCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"exec", &m_oExecCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"sys", &m_oSysCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
@@ -794,7 +965,14 @@ namespace ShellInterface {
 			//Unregister commands
 			this->m_pScriptInt->UnregisterCommand(L"getscriptpath");
 			this->m_pScriptInt->UnregisterCommand(L"getscriptname");
+			this->m_pScriptInt->UnregisterCommand(L"textview");
+			this->m_pScriptInt->UnregisterCommand(L"random");
+			this->m_pScriptInt->UnregisterCommand(L"sleep");
+			this->m_pScriptInt->UnregisterCommand(L"gettickcount");
+			this->m_pScriptInt->UnregisterCommand(L"getsystemerror");
+			this->m_pScriptInt->UnregisterCommand(L"setsystemerror");
 			this->m_pScriptInt->UnregisterCommand(L"cwd");
+			this->m_pScriptInt->UnregisterCommand(L"gwd");
 			this->m_pScriptInt->UnregisterCommand(L"require");
 			this->m_pScriptInt->UnregisterCommand(L"exec");
 			this->m_pScriptInt->UnregisterCommand(L"sys");

@@ -1,8 +1,10 @@
 #include "automation.h"
+#include "clipboard.h"
+#include "timer.h"
 
 IShellPluginAPI* g_pShellPluginAPI;
 
-class IFindWindowCommandInterface : public IVoidCommandInterface {
+class IFindWindowCommandInterface : public IResultCommandInterface<dnyInteger> {
 public:
 	IFindWindowCommandInterface() {}
 
@@ -12,9 +14,9 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		HWND hWnd = Automation::FindWindow(pContext->GetPartString(2), pContext->GetPartString(3));
+		HWND hWnd = Automation::FindWindow(pContext->GetPartString(1), pContext->GetPartString(2));
 
-		Automation::SetWindowHandle(pContext->GetPartString(1), hWnd);
+		IResultCommandInterface<dnyInteger>::SetResult((dnyInteger)hWnd);
 		
 		return true;
 	}
@@ -30,13 +32,13 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		IResultCommandInterface<dnyBoolean>::SetResult(Automation::IsWindow(Automation::GetWindowHandle(pContext->GetPartString(1))));
+		IResultCommandInterface<dnyBoolean>::SetResult(Automation::IsWindow((HWND)pContext->GetPartInt(1)));
 
 		return true;
 	}
 } g_oIsWindowCommandInterface;
 
-class IGetForegroundWindowCommandInterface : public IVoidCommandInterface {
+class IGetForegroundWindowCommandInterface : public IResultCommandInterface<dnyInteger> {
 public:
 	IGetForegroundWindowCommandInterface() {}
 
@@ -46,7 +48,7 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		Automation::SetWindowHandle(pContext->GetPartString(1), Automation::GetForegroundWindow());
+		IResultCommandInterface<dnyInteger>::SetResult((dnyInteger)Automation::GetForegroundWindow());
 
 		return true;
 	}
@@ -62,7 +64,7 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		IResultCommandInterface<dnyBoolean>::SetResult(Automation::SetForegroundWindow(Automation::GetWindowHandle(pContext->GetPartString(1))));
+		IResultCommandInterface<dnyBoolean>::SetResult(Automation::SetForegroundWindow((HWND)pContext->GetPartInt(1)));
 
 		return true;
 	}
@@ -78,7 +80,7 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		IResultCommandInterface<dnyBoolean>::SetResult(Automation::SetWindowPos(Automation::GetWindowHandle(pContext->GetPartString(1)), (int)pContext->GetPartInt(2), (int)pContext->GetPartInt(3)));
+		IResultCommandInterface<dnyBoolean>::SetResult(Automation::SetWindowPos((HWND)pContext->GetPartInt(1), (int)pContext->GetPartInt(2), (int)pContext->GetPartInt(3)));
 
 		return true;
 	}
@@ -99,7 +101,7 @@ public:
 
 		int x, y;
 
-		bool bResult = Automation::GetWindowPos(Automation::GetWindowHandle(pContext->GetPartString(1)), x, y);
+		bool bResult = Automation::GetWindowPos((HWND)pContext->GetPartInt(1), x, y);
 
 		pVarX->SetValue(x);
 		pVarY->SetValue(y);
@@ -125,7 +127,7 @@ public:
 
 		int w, h;
 
-		bool bResult = Automation::GetWindowSize(Automation::GetWindowHandle(pContext->GetPartString(1)), w, h);
+		bool bResult = Automation::GetWindowSize((HWND)pContext->GetPartInt(1), w, h);
 
 		pVarW->SetValue(w);
 		pVarH->SetValue(h);
@@ -146,7 +148,7 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		IResultCommandInterface<dnyBoolean>::SetResult(Automation::SetWindowText(Automation::GetWindowHandle(pContext->GetPartString(1)), pContext->GetPartString(2)));
+		IResultCommandInterface<dnyBoolean>::SetResult(Automation::SetWindowText((HWND)pContext->GetPartInt(1), pContext->GetPartString(2)));
 
 		return true;
 	}
@@ -162,7 +164,7 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		IResultCommandInterface<dnyString>::SetResult(Automation::GetWindowText(Automation::GetWindowHandle(pContext->GetPartString(1))));
+		IResultCommandInterface<dnyString>::SetResult(Automation::GetWindowText((HWND)pContext->GetPartInt(1)));
 
 		return true;
 	}
@@ -178,7 +180,7 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		IResultCommandInterface<dnyString>::SetResult(Automation::GetClassName(Automation::GetWindowHandle(pContext->GetPartString(1))));
+		IResultCommandInterface<dnyString>::SetResult(Automation::GetClassName((HWND)pContext->GetPartInt(1)));
 
 		return true;
 	}
@@ -194,7 +196,7 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		IResultCommandInterface<dnyBoolean>::SetResult(Automation::ShowWindow(Automation::GetWindowHandle(pContext->GetPartString(1)), (int)pContext->GetPartInt(2)));
+		IResultCommandInterface<dnyBoolean>::SetResult(Automation::ShowWindow((HWND)pContext->GetPartInt(1), (int)pContext->GetPartInt(2)));
 
 		return true;
 	}
@@ -293,22 +295,41 @@ public:
 std::wstring wszScriptRoutine;
 bool Event_EnumWindows(HWND hWnd, const std::wstring& wszTitleText)
 {
-	g_pShellPluginAPI->Fnc_BeginFunctionCall(wszScriptRoutine, CT_BOOL);
+	/*g_pShellPluginAPI->Fnc_BeginFunctionCall(wszScriptRoutine, CT_BOOL);
 	g_pShellPluginAPI->Fnc_PushFunctionParam((dnyInteger)hWnd);
 	g_pShellPluginAPI->Fnc_PushFunctionParam(wszTitleText);
 	g_pShellPluginAPI->Fnc_ExecuteFunction();
 	bool bResult = g_pShellPluginAPI->Fnc_QueryFunctionResultAsBoolean();
-	g_pShellPluginAPI->Fnc_EndFunctionCall();
+	g_pShellPluginAPI->Fnc_EndFunctionCall();*/
+
+	ICVar<dnyBoolean>* pCvar = (ICVar<dnyBoolean>*)g_pShellPluginAPI->Cv_RegisterCVar(L"__automation__Event_EnumWindows", CT_BOOL);
+	
+	g_pShellPluginAPI->Scr_ExecuteCode(L"call " + wszScriptRoutine + L"(" + std::to_wstring((dnyInteger)hWnd) + L", \"" + wszTitleText + L"\") => __automation__Event_EnumWindows;");
+
+	bool bResult = pCvar->GetValue();
+	
+	g_pShellPluginAPI->Cv_FreeCVar(L"__automation__Event_EnumWindows");
+
 	return bResult;
 }
+std::wstring wszScriptChildRoutine;
 bool Event_EnumChildWindows(HWND hWnd, const std::wstring& wszTitleText)
 {
-	g_pShellPluginAPI->Fnc_BeginFunctionCall(wszScriptRoutine, CT_BOOL);
+	/*g_pShellPluginAPI->Fnc_BeginFunctionCall(wszScriptRoutine, CT_BOOL);
 	g_pShellPluginAPI->Fnc_PushFunctionParam((dnyInteger)hWnd);
 	g_pShellPluginAPI->Fnc_PushFunctionParam(wszTitleText);
 	g_pShellPluginAPI->Fnc_ExecuteFunction();
 	bool bResult = g_pShellPluginAPI->Fnc_QueryFunctionResultAsBoolean();
-	g_pShellPluginAPI->Fnc_EndFunctionCall();
+	g_pShellPluginAPI->Fnc_EndFunctionCall();*/
+
+	ICVar<dnyBoolean>* pCvar = (ICVar<dnyBoolean>*)g_pShellPluginAPI->Cv_RegisterCVar(L"__automation__Event_EnumChildWindows", CT_BOOL);
+
+	g_pShellPluginAPI->Scr_ExecuteCode(L"call " + wszScriptChildRoutine + L"(" + std::to_wstring((dnyInteger)hWnd) + L", \"" + wszTitleText + L"\") => __automation__Event_EnumChildWindows;");
+
+	bool bResult = pCvar->GetValue();
+
+	g_pShellPluginAPI->Cv_FreeCVar(L"__automation__Event_EnumChildWindows");
+
 	return bResult;
 }
 class IEnumWindowsCommandInterface : public IResultCommandInterface<dnyBoolean> {
@@ -337,12 +358,44 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		wszScriptRoutine = pContext->GetPartString(2);
+		wszScriptChildRoutine = pContext->GetPartString(2);
 		IResultCommandInterface<dnyBoolean>::SetResult(Automation::EnumChildWindows((HWND)pContext->GetPartInt(1), &Event_EnumChildWindows));
 
 		return true;
 	}
 } g_oEnumChildWindowsCommandInterface;
+
+class ISendMessageCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	ISendMessageCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		IResultCommandInterface<dnyInteger>::SetResult(Automation::SendMessage((HWND)pContext->GetPartInt(1), (UINT)pContext->GetPartInt(2), (WPARAM)pContext->GetPartInt(3), (LPARAM)pContext->GetPartInt(4)));
+		
+		return true;
+	}
+} g_oSendMessageCommandInterface;
+
+class IPostMessageCommandInterface : public IResultCommandInterface<dnyBoolean> {
+public:
+	IPostMessageCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		IResultCommandInterface<dnyBoolean>::SetResult(Automation::PostMessage((HWND)pContext->GetPartInt(1), (UINT)pContext->GetPartInt(2), (WPARAM)pContext->GetPartInt(3), (LPARAM)pContext->GetPartInt(4)));
+
+		return true;
+	}
+} g_oPostMessageCommandInterface;
 
 class ISendKeyboardInputCommandInterface : public IResultCommandInterface<dnyBoolean> {
 public:
@@ -427,6 +480,87 @@ public:
 		return true;
 	}
 } g_oAddMouseHookCommandInterface;
+class ISetClipboardStringCommandInterface : public IVoidCommandInterface {
+public:
+	ISetClipboardStringCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		return Clipboard::SetClipboardString(pContext->GetPartString(1));
+	}
+
+} g_oSetClipboardStringCommandInterface;
+class IGetClipboardStringCommandInterface : public IResultCommandInterface<dnyString> {
+public:
+	IGetClipboardStringCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		IResultCommandInterface<dnyString>::SetResult(Clipboard::GetClipboardString());
+
+		return true;
+	}
+} g_oGetClipboardStringCommandInterface;
+class IClearClipboardCommandInterface : public IVoidCommandInterface {
+public:
+	IClearClipboardCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		return Clipboard::ClearClipboardData();
+	}
+
+} g_oClearClipboardCommandInterface;
+class IAddTimerCommandInterface : public IVoidCommandInterface {
+public:
+	IAddTimerCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		return Timer::AddTimer(pContext->GetPartString(1), pContext->GetPartInt(2));
+	}
+} g_oAddTimerCommandInterface;
+class ITimerExistsCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	ITimerExistsCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		IResultCommandInterface<dnyInteger>::SetResult((dnyInteger)Timer::TimerExists(pContext->GetPartString(1)));
+
+		return true;
+	}
+} g_oTimerExistsCommandInterface;
+class IProcessTimersCommandInterface : public IVoidCommandInterface {
+public:
+	IProcessTimersCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		return Timer::Process();
+	}
+
+} g_oProcessTimersCommandInterface;
 class IProcessHooksCommandInterface : public IVoidCommandInterface {
 public:
 	IProcessHooksCommandInterface() {}
@@ -468,11 +602,12 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 
 	//Set pointer
 	Automation::Init(pInterfaceData);
+	Timer::Init(pInterfaceData);
 
 	//Register commands
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_findwindow", &g_oFindWindowCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_findwindow", &g_oFindWindowCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_iswindow", &g_oIsWindowCommandInterface, CT_BOOL);
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_getfgwindow", &g_oGetForegroundWindowCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_getfgwindow", &g_oGetForegroundWindowCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_setfgwindow", &g_oSetForegroundWindowCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_setwndpos", &g_oSetWindowPosCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_getwndpos", &g_oGetWindowPosCommandInterface, CT_BOOL);
@@ -488,11 +623,19 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_iskeyup", &g_oIsKeyUpCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_enumwindows", &g_oEnumWindowsCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_enumchildwindows", &g_oEnumChildWindowsCommandInterface, CT_BOOL);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmessage", &g_oSendMessageCommandInterface, CT_INT);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_postmessage", &g_oPostMessageCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendkeystrokes", &g_oSendKeyboardInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmousestrokes", &g_oSendMouseInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addkeyevent", &g_oAddKeyboardHookCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addmouseevent", &g_oAddMouseHookCommandInterface, CT_BOOL);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_clpbsetstring", &g_oSetClipboardStringCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_clpbgetstring", &g_oGetClipboardStringCommandInterface, CT_STRING);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_clpbclear", &g_oClearClipboardCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addtimer", &g_oAddTimerCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_timerexists", &g_oTimerExistsCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_procevents", &g_oProcessHooksCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_calctimers", &g_oProcessTimersCommandInterface, CT_VOID);
 
 	return true;
 }
@@ -521,11 +664,19 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_iskeyup");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_enumwindows");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_enumchildwindows");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmessage");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_postmessage");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendkeystrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmousestrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addkeyevent");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addmouseevent");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_clpbsetstring");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_clpbgetstring");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_clpbclear");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addtimer");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_timerexists");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_procevents");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_calctimers");
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)

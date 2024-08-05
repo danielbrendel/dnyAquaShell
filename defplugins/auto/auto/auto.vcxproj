@@ -144,7 +144,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="automation.h" />
+    <ClInclude Include="clipboard.h" />
     <ClInclude Include="dnyas_sdk.h" />
+    <ClInclude Include="timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp" />

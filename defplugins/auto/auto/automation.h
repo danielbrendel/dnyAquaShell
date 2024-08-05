@@ -7,151 +7,7 @@
 
 namespace Automation {
 	IShellPluginAPI* pShellPluginAPI = nullptr;
-
-	class CHwndMgr {
-	private:
-		struct hwnd_s {
-			HWND hWnd;
-			cvarptr_t pv;
-			std::wstring wszName;
-		};
-
-		std::vector<hwnd_s> m_vHwnd;
-
-		bool Find(const std::wstring& wszName, size_t* pIdOut = nullptr)
-		{
-			for (size_t i = 0; i < this->m_vHwnd.size(); i++) {
-				if (this->m_vHwnd[i].wszName == wszName) {
-					if (pIdOut)
-						*pIdOut = i;
-
-					return true;
-				}
-			}
-
-			return false;
-		}
-	public:
-		CHwndMgr() {}
-		~CHwndMgr() { this->m_vHwnd.clear(); }
-
-		bool Add(const std::wstring& wszName)
-		{
-			if (this->Find(wszName)) return false;
-			hwnd_s sWnd;
-			sWnd.hWnd = 0;
-			sWnd.wszName = wszName;
-			sWnd.pv = pShellPluginAPI->Cv_RegisterCVar(wszName, CT_STRING);
-			if (!sWnd.pv) return false;
-			this->m_vHwnd.push_back(sWnd);
-			return true;
-		}
-
-		bool Remove(const std::wstring& wszName)
-		{
-			size_t uiId;
-			if (!this->Find(wszName, &uiId)) return false;
-			pShellPluginAPI->Cv_FreeCVar(wszName);
-			this->m_vHwnd.erase(this->m_vHwnd.begin() + uiId);
-			return true;
-		}
-
-		bool Set(const std::wstring& wszName, HWND hWnd)
-		{
-			size_t uiId;
-			if (!this->Find(wszName, &uiId)) return false;
-			ICVar<dnyString>* pStrVar = (ICVar<dnyString>*)this->m_vHwnd[uiId].pv;
-			pStrVar->SetValue(std::to_wstring((unsigned long long)hWnd));
-			this->m_vHwnd[uiId].hWnd = hWnd;
-			return true;
-		}
-
-		HWND Get(const std::wstring& wszName)
-		{
-			size_t uiId;
-			if (!this->Find(wszName, &uiId)) return NULL;
-			return this->m_vHwnd[uiId].hWnd;
-		}
-	} oHwndMgr;
-
-	class IAddHwndCmdInt : public IVoidCommandInterface {
-	public:
-		IAddHwndCmdInt() {}
-
-		virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
-		{
-			ICodeContext* pContext = (ICodeContext*)pCodeContext;
-
-			pContext->ReplaceAllVariables(pInterfaceObject);
-
-			return oHwndMgr.Add(pContext->GetPartString(1));
-		}
-	} oAddHwndCmd;
-
-	class IDelHwndCmdInt : public IVoidCommandInterface {
-	public:
-		IDelHwndCmdInt() {}
-
-		virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
-		{
-			ICodeContext* pContext = (ICodeContext*)pCodeContext;
-
-			pContext->ReplaceAllVariables(pInterfaceObject);
-
-			return oHwndMgr.Remove(pContext->GetPartString(1));
-		}
-	} oDelHwndCmdInt;
-
-	bool Init(IShellPluginAPI* pInterface) 
-	{ 
-		if (!pInterface)
-			return false;
-
-		pShellPluginAPI = pInterface;
-
-		#define REG_SCRIPT_CONST(c) if (!pShellPluginAPI->Scr_ExecuteCode(L"const " #c L" int <= " + std::to_wstring(c) + L";")) return false;
-		REG_SCRIPT_CONST(SW_FORCEMINIMIZE);
-		REG_SCRIPT_CONST(SW_HIDE);
-		REG_SCRIPT_CONST(SW_MAXIMIZE);
-		REG_SCRIPT_CONST(SW_MINIMIZE);
-		REG_SCRIPT_CONST(SW_RESTORE);
-		REG_SCRIPT_CONST(SW_SHOW);
-		REG_SCRIPT_CONST(SW_SHOWDEFAULT);
-		REG_SCRIPT_CONST(SW_SHOWMAXIMIZED);
-		REG_SCRIPT_CONST(SW_SHOWMINIMIZED);
-		REG_SCRIPT_CONST(SW_SHOWMINNOACTIVE);
-		REG_SCRIPT_CONST(SW_SHOWNA);
-		REG_SCRIPT_CONST(SW_SHOWNOACTIVATE);
-		REG_SCRIPT_CONST(SW_SHOWNORMAL);
-		REG_SCRIPT_CONST(WM_LBUTTONDOWN);
-		REG_SCRIPT_CONST(WM_LBUTTONUP);
-		REG_SCRIPT_CONST(WM_RBUTTONDOWN);
-		REG_SCRIPT_CONST(WM_RBUTTONUP);
-		REG_SCRIPT_CONST(WM_MOUSEMOVE);
-
-		pShellPluginAPI->Cmd_RegisterCommand(L"HWND", &oAddHwndCmd, CT_VOID);
-		pShellPluginAPI->Cmd_RegisterCommand(L"-HWND", &oDelHwndCmdInt, CT_VOID);
-
-		return true;
-	}
-
-	void Release(void)
-	{
-		pShellPluginAPI->Cmd_UnregisterCommand(L"HWND");
-		pShellPluginAPI->Cmd_UnregisterCommand(L"-HWND");
-
-		pShellPluginAPI = nullptr;
-	}
-
-	bool SetWindowHandle(const std::wstring& wszName, HWND hWnd)
-	{
-		return oHwndMgr.Set(wszName, hWnd);
-	}
-
-	HWND GetWindowHandle(const std::wstring& wszName)
-	{
-		return oHwndMgr.Get(wszName);
-	}
+	class CSendInput* pSendInput = nullptr;
 
 	inline HWND FindWindow(const std::wstring& wszClassName, const std::wstring& wszWindowText)
 	{
@@ -219,11 +75,13 @@ namespace Automation {
 		if (len <= 0)
 			return L"";
 
-		wchar_t* pwStr = new wchar_t[len + 1];
+		wchar_t* pwStr = new wchar_t[len + 2];
 		if (!pwStr)
 			return L"";
 
-		::GetWindowText(hWnd, pwStr, len);
+		memset(pwStr, 0x00, sizeof(wchar_t) * (len + 2));
+
+		::GetWindowText(hWnd, pwStr, len + 1);
 		std::wstring wszResult(pwStr);
 
 		delete[] pwStr;
@@ -548,6 +406,8 @@ namespace Automation {
 					sInput.ki.wScan = wszInputStr[i];
 					sInput.ki.dwFlags = KEYEVENTF_UNICODE;
 					vResult.push_back(sInput);
+					sInput.ki.dwFlags |= KEYEVENTF_KEYUP;
+					vResult.push_back(sInput);
 				}
 			}
 			
@@ -677,15 +537,22 @@ namespace Automation {
 			return bResult;
 		}
 	};
+	
+	inline LRESULT SendMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return ::SendMessage(hWnd, msg, wParam, lParam);
+	}
+	inline bool PostMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return ::PostMessage(hWnd, msg, wParam, lParam) == TRUE;
+	}
 	inline bool SendKeyboardInput(const std::wstring& wszInputStr, bool bWithCtrl, bool bWithShift, bool bWithAlt)
 	{
-		CSendInput oSendInput;
-		return oSendInput.KbdSend(wszInputStr, bWithCtrl, bWithShift, bWithAlt);
+		return pSendInput->KbdSend(wszInputStr, bWithCtrl, bWithShift, bWithAlt);
 	}
 	inline bool SendMouseInput(const std::wstring& wszInputStr, bool bWithCtrl, bool bWithShift, bool bWithAlt)
 	{
-		CSendInput oSendInput;
-		return oSendInput.MouSend(wszInputStr, bWithCtrl, bWithShift, bWithAlt);
+		return pSendInput->MouSend(wszInputStr, bWithCtrl, bWithShift, bWithAlt);
 	}
 
 	class CInput* pInput = nullptr;
@@ -848,5 +715,41 @@ namespace Automation {
 	void MK_Process(void)
 	{
 		oInputMgr.Process();
+	}
+
+	bool Init(IShellPluginAPI* pInterface)
+	{
+		if (!pInterface)
+			return false;
+
+		pShellPluginAPI = pInterface;
+		pSendInput = new CSendInput();
+
+		#define REG_SCRIPT_CONST(c) if (!pShellPluginAPI->Scr_ExecuteCode(L"const " #c L" int <= " + std::to_wstring(c) + L";")) return false;
+		REG_SCRIPT_CONST(SW_FORCEMINIMIZE);
+		REG_SCRIPT_CONST(SW_HIDE);
+		REG_SCRIPT_CONST(SW_MAXIMIZE);
+		REG_SCRIPT_CONST(SW_MINIMIZE);
+		REG_SCRIPT_CONST(SW_RESTORE);
+		REG_SCRIPT_CONST(SW_SHOW);
+		REG_SCRIPT_CONST(SW_SHOWDEFAULT);
+		REG_SCRIPT_CONST(SW_SHOWMAXIMIZED);
+		REG_SCRIPT_CONST(SW_SHOWMINIMIZED);
+		REG_SCRIPT_CONST(SW_SHOWMINNOACTIVE);
+		REG_SCRIPT_CONST(SW_SHOWNA);
+		REG_SCRIPT_CONST(SW_SHOWNOACTIVATE);
+		REG_SCRIPT_CONST(SW_SHOWNORMAL);
+		REG_SCRIPT_CONST(WM_LBUTTONDOWN);
+		REG_SCRIPT_CONST(WM_LBUTTONUP);
+		REG_SCRIPT_CONST(WM_RBUTTONDOWN);
+		REG_SCRIPT_CONST(WM_RBUTTONUP);
+		REG_SCRIPT_CONST(WM_MOUSEMOVE);
+
+		return true;
+	}
+	void Release(void)
+	{
+		pShellPluginAPI = nullptr;
+		delete pSendInput;
 	}
 }

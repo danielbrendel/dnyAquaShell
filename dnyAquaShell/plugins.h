@@ -22,14 +22,12 @@ namespace Plugins {
 	private:
 		typedef WORD dnyVersionInfo;
 		typedef bool(*TpfnPluginLoadFunc)(dnyVersionInfo version, void* pInterfaceData, void* pPluginInfos);
-		typedef void(*TpfnPluginProcessFunc)(void);
 		typedef void(*TpfnPluginUnloadFunc)(void);
 
 		struct plugin_s {
 			HMODULE hModule;
 			std::wstring wszPluginFile;
 			TpfnPluginLoadFunc pfnLoadFunc;
-			TpfnPluginProcessFunc pfnProcessFunc;
 			TpfnPluginUnloadFunc pfnUnloadFunc;
 			struct plugininfo_s {
 				wchar_t wszName[MAX_PATH];
