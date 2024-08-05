@@ -376,15 +376,21 @@ namespace ShellInterface {
 
 				pContext->ReplaceAllVariables(pObjectInstance);
 
-				if (__pShellInterface__->m_pPluginInt->PluginLoaded(__pShellInterface__->m_wszBaseDir + L"plugins\\" + pContext->GetPartString(1) + L".dll")) {
-					std::wcout << L"Required library \"" << pContext->GetPartString(1) << L"\" is already loaded" << std::endl;
-					return true;
-				}
+				bool bResult = false;
 
-				bool bResult = __pShellInterface__->m_pPluginInt->LoadPlugin(__pShellInterface__->m_wszBaseDir + L"plugins\\" + pContext->GetPartString(1) + L".dll", __pShellInterface__->m_pShellInt, DNY_AS_PRODUCT_VERSION_W);
+				if (pContext->GetPartString(1) == L"__ALL__") {
+					bResult = __pShellInterface__->m_pPluginInt->LoadAllPlugins(__pShellInterface__->m_wszBaseDir + L"plugins", __pShellInterface__->m_pShellInt);
+				} else {
+					if (__pShellInterface__->m_pPluginInt->PluginLoaded(__pShellInterface__->m_wszBaseDir + L"plugins\\" + pContext->GetPartString(1) + L".dll")) {
+						//std::wcout << L"Required library \"" << pContext->GetPartString(1) << L"\" is already loaded" << std::endl;
+						return true;
+					}
 
-				if (!bResult) {
-					std::wcout << L"Required library \"" << pContext->GetPartString(1) << L"\" could not be loaded" << std::endl;
+					bResult = __pShellInterface__->m_pPluginInt->LoadPlugin(__pShellInterface__->m_wszBaseDir + L"plugins\\" + pContext->GetPartString(1) + L".dll", __pShellInterface__->m_pShellInt, DNY_AS_PRODUCT_VERSION_W);
+
+					if (!bResult) {
+						std::wcout << L"Required library \"" << pContext->GetPartString(1) << L"\" could not be loaded" << std::endl;
+					}
 				}
 
 				return bResult;

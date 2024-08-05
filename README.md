@@ -17,7 +17,7 @@
 **GitHub**: https://github.com/danielbrendel/
 
 ## Description
-This tool is an extendable scripting shell for Windows using dnyScriptInterpreter. The shell can be used either in interactive mode or just as a host for running DNYS script files. The functionality of the shell can be extended via native DLL plugins. It is best suited for automation tasks as well as complex script development.
+AquaShell is an extendable scripting shell for Windows using dnyScriptInterpreter. The shell can be used either in interactive mode or just as a host for running DNYS script files. The functionality of the shell can be extended via native DLL plugins. It is best suited for automation tasks as well as complex script development.
 
 ## Example code
 ```
