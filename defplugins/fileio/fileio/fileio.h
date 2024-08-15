@@ -691,6 +691,8 @@ namespace FileIO {
 		REG_CMD(L"fcopy", &oCopyFileCommandInterface, CT_BOOL);
 		REG_CMD(L"fmove", &oMoveFileCommandInterface, CT_BOOL);
 
+		pShellPluginAPI->Scr_ExecuteCode(L"const FIO_INVALID_HANDLE int <= -1;");
+
 		wchar_t wcBasePath[MAX_PATH];
 		
 		if (!GetModuleFileName(NULL, wcBasePath, sizeof(wcBasePath)))

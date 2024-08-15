@@ -5,19 +5,6 @@
 #include <Windows.h>
 #include <CommCtrl.h>
 
-/*
-	dnyWinForms component developed by Daniel Brendel
-	-> An OOP wrapper for Windows forms and controls using WinAPI
-
-	(C) 2017 by Daniel Brendel
-	
-	Version: 0.1
-	Contact: dbrendel1988<at>gmail<dot>com
-	GitHub: https://github.com/danielbrendel/
-	
-	Released under the MIT license
-*/
-
 namespace dnyWinForms {
 	LRESULT CALLBACK CommonWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -155,6 +142,9 @@ namespace dnyWinForms {
 		WFDimension m_dimResolution;
 		CFont* m_pFont;
 		std::vector<eventmethod_s> m_vEventHandlers;
+		LONG_PTR m_lWindowStyle;
+		USHORT m_usMenuId;
+		static USHORT ComponentMenuCounter;
 
 		virtual void SetTypeName(const SCOMPONENTSTRING& wszTypeName) { this->m_wszTypeName = wszTypeName; }
 
@@ -225,6 +215,9 @@ namespace dnyWinForms {
 			this->m_wszName = wszName;
 			this->m_dimPosition = dimPosition;
 			this->m_dimResolution = dimResolution;
+
+			//Increment menu counter
+			this->m_usMenuId = ComponentMenuCounter++;
 
 			return true;
 		}
@@ -361,6 +354,28 @@ namespace dnyWinForms {
 
 			return false;
 		}
+		virtual bool StartGroup()
+		{
+			//Set component group
+			
+			this->m_lWindowStyle = GetWindowLongPtr(this->GetHandle(), GWL_STYLE);
+			
+			return SetWindowLongPtr(this->GetHandle(), GWL_STYLE, this->m_lWindowStyle | WS_GROUP | WS_TABSTOP) != 0;
+		}
+		virtual bool SetGroup()
+		{
+			//Set component group
+
+			this->m_lWindowStyle = GetWindowLongPtr(this->GetHandle(), GWL_STYLE);
+
+			return SetWindowLongPtr(this->GetHandle(), GWL_STYLE, this->m_lWindowStyle | WS_TABSTOP) != 0;
+		}
+		virtual bool ClearGroup()
+		{
+			//Clear group
+
+			return SetWindowLongPtr(this->GetHandle(), GWL_STYLE, this->m_lWindowStyle) != 0;
+		}
 
 		//Getters
 		virtual bool IsValid(void) const { return IsWindow(this->m_hWindow) == TRUE; }
@@ -372,7 +387,10 @@ namespace dnyWinForms {
 		virtual const WFDimension& GetResolution(void) const { return this->m_dimResolution; }
 		virtual const std::wstring& GetText(void) const { return this->m_wszText; }
 		virtual const CFont* GetFont(void) const { return this->m_pFont; }
+		static USHORT GetMenuCount(void) { return IBaseComponent::ComponentMenuCounter; }
+		USHORT GetMenuId(void) { return this->m_usMenuId; }
 	};
+	USHORT IBaseComponent::ComponentMenuCounter = 1;
 
 	typedef size_t HCOMPONENT;
 	#define INVALID_COMPONENT_HANDLE std::wstring::npos
@@ -405,6 +423,7 @@ namespace dnyWinForms {
 			sWndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 			sWndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 			sWndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+			sWndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 			sWndClass.lpfnWndProc = &CommonWindowProc;
 
 			//Register window class
@@ -586,10 +605,12 @@ namespace dnyWinForms {
 
 			//Attempt to peek message from queue
 			if (PeekMessage(&sMsg, NULL, 0, 0, PM_REMOVE)) {
-				//Translate message data
-				TranslateMessage(&sMsg);
-				//Dispatch message to window procedure
-				DispatchMessage(&sMsg);
+				if (IsDialogMessage(this->m_hWindow, &sMsg) == FALSE) { //Check for dialog messages
+					//Translate message data
+					TranslateMessage(&sMsg);
+					//Dispatch message to window procedure
+					DispatchMessage(&sMsg);
+				}
 			}
 
 			//Update Form window
@@ -646,7 +667,6 @@ namespace dnyWinForms {
 				break;
 			case WM_PAINT: //Window shall paint
 				this->Draw();
-				return 0;
 				break;
 			case WM_QUIT: //Window shall close
 				this->SignalRelease(); //Signal host to release this Form
@@ -727,9 +747,6 @@ namespace dnyWinForms {
 	};
 
 	class CButton : public IBaseComponent {
-	private:
-		static USHORT ButtonClickCounter;
-		USHORT m_usButtonClickId;
 	public:
 		CButton() {}
 		CButton(HWND hParentWnd, const std::wstring& wszName, const WFDimension& dimPosition, const WFDimension& dimResolution) { this->Instantiate(hParentWnd, wszName, dimPosition, dimResolution); }
@@ -745,12 +762,9 @@ namespace dnyWinForms {
 			//Instantiate base component
 			if (!IBaseComponent::Instantiate(hParentWnd, wszName, dimPosition, dimResolution))
 				return false;
-			
-			//Store and increment button click ID counter
-			this->m_usButtonClickId = CButton::ButtonClickCounter++;
 
 			//Attach button to parent window
-			this->m_hWindow = CreateWindowEx(0, L"Button", NULL, WS_CHILD | WS_VISIBLE, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], hParentWnd, (HMENU)this->m_usButtonClickId, (HINSTANCE)GetCurrentProcess(), NULL);
+			this->m_hWindow = CreateWindowEx(0, L"Button", NULL, WS_CHILD | WS_VISIBLE, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], hParentWnd, (HMENU)this->m_usMenuId, (HINSTANCE)GetCurrentProcess(), NULL);
 
 			return this->m_hWindow != NULL;
 		}
@@ -763,7 +777,7 @@ namespace dnyWinForms {
 
 			//Check if button has been clicked
 			if (HIWORD(wParam) == BN_CLICKED) {
-				if (LOWORD(wParam) == this->m_usButtonClickId) {
+				if (LOWORD(wParam) == this->m_usMenuId) {
 					this->OnClick();
 					return true;
 				}
@@ -786,13 +800,8 @@ namespace dnyWinForms {
 
 			this->CallEventHandler(L"OnClick", nullptr);
 		}
-
-		//Getters
-		static USHORT GetCount(void) { return CButton::ButtonClickCounter; }
-		USHORT GetCommandId(void) { return this->m_usButtonClickId; }
 	};
-	USHORT CButton::ButtonClickCounter = 1;
-
+	
 	class CTextbox : public IBaseComponent {
 	public:
 		CTextbox() {}
@@ -811,7 +820,7 @@ namespace dnyWinForms {
 				return false;
 
 			//Create textbox control
-			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"Edit", NULL, WS_CHILD | WS_VISIBLE | ES_MULTILINE, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), 0, (HINSTANCE)GetCurrentProcess(), NULL);
+			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"Edit", NULL, WS_CHILD | WS_VISIBLE | ES_MULTILINE, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), (HMENU)this->m_usMenuId, (HINSTANCE)GetCurrentProcess(), NULL);
 			
 			return this->m_hWindow != NULL;
 		}
@@ -879,9 +888,6 @@ namespace dnyWinForms {
 	};
 
 	class CCheckbox : public IBaseComponent {
-	private:
-		static USHORT CheckboxClickCounter;
-		USHORT m_usCheckboxClickId;
 	public:
 		CCheckbox() {}
 		CCheckbox(HWND hParentWnd, const std::wstring& wszName, const WFDimension& dimPosition, const WFDimension& dimResolution) { this->Instantiate(hParentWnd, wszName, dimPosition, dimResolution); }
@@ -898,11 +904,8 @@ namespace dnyWinForms {
 			if (!IBaseComponent::Instantiate(hParentWnd, wszName, dimPosition, dimResolution))
 				return false;
 
-			//Update ID values
-			this->m_usCheckboxClickId = CCheckbox::CheckboxClickCounter++;
-
 			//Create checkbox control
-			this->m_hWindow = CreateWindowEx(0, L"BUTTON", wszName.c_str(), WS_CHILD | BS_CHECKBOX | WS_VISIBLE, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), (HMENU)this->m_usCheckboxClickId, (HINSTANCE)GetCurrentProcess(), NULL);
+			this->m_hWindow = CreateWindowEx(0, L"BUTTON", wszName.c_str(), WS_CHILD | BS_CHECKBOX | WS_VISIBLE, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), (HMENU)this->m_usMenuId, (HINSTANCE)GetCurrentProcess(), NULL);
 
 			return this->m_hWindow != NULL;
 		}
@@ -915,17 +918,17 @@ namespace dnyWinForms {
 			//Handle command message
 
 			//Check if this checkbox control is affected
-			if(LOWORD(wParam) == this->m_usCheckboxClickId) {
+			if(LOWORD(wParam) == this->m_usMenuId) {
 				//Toggle button value
 
 				//Get checked-status value
-				UINT uiStatus = IsDlgButtonChecked(hWnd, this->m_usCheckboxClickId);
+				UINT uiStatus = IsDlgButtonChecked(hWnd, this->m_usMenuId);
 				if (uiStatus == BST_CHECKED) { //If control is checked
 					//Uncheck control
-					CheckDlgButton(hWnd, this->m_usCheckboxClickId, BST_UNCHECKED);
+					CheckDlgButton(hWnd, this->m_usMenuId, BST_UNCHECKED);
 				} else if (uiStatus == BST_UNCHECKED) { //If control is unchecked
 					//Check control
-					CheckDlgButton(hWnd, this->m_usCheckboxClickId, BST_CHECKED);
+					CheckDlgButton(hWnd, this->m_usMenuId, BST_CHECKED);
 				}
 
 				return true;
@@ -942,10 +945,10 @@ namespace dnyWinForms {
 
 			switch (bChecked) {
 			case false:
-				return CheckDlgButton(this->GetParent(), this->m_usCheckboxClickId, BST_UNCHECKED) == TRUE;
+				return CheckDlgButton(this->GetParent(), this->m_usMenuId, BST_UNCHECKED) == TRUE;
 				break;
 			case true:
-				return CheckDlgButton(this->GetParent(), this->m_usCheckboxClickId, BST_CHECKED) == TRUE;
+				return CheckDlgButton(this->GetParent(), this->m_usMenuId, BST_CHECKED) == TRUE;
 				break;
 			}
 
@@ -953,9 +956,8 @@ namespace dnyWinForms {
 		}
 
 		//Getters
-		virtual bool IsChecked(void) const { return IsDlgButtonChecked(this->GetParent(), this->m_usCheckboxClickId) == BST_CHECKED; }
+		virtual bool IsChecked(void) const { return IsDlgButtonChecked(this->GetParent(), this->m_usMenuId) == BST_CHECKED; }
 	};
-	USHORT CCheckbox::CheckboxClickCounter = 201;
 
 	typedef LRESULT COMBOBOXITEM;
 	class CCombobox : public IBaseComponent {
@@ -976,7 +978,7 @@ namespace dnyWinForms {
 				return false;
 
 			//Create listbox control
-			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, wszName.c_str(), WS_CHILD | WS_VISIBLE | CBS_HASSTRINGS | CBS_DROPDOWN, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), 0, (HINSTANCE)GetCurrentProcess(), NULL);
+			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, WC_COMBOBOX, wszName.c_str(), WS_CHILD | WS_VISIBLE | CBS_HASSTRINGS | CBS_DROPDOWN, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), (HMENU)this->m_usMenuId, (HINSTANCE)GetCurrentProcess(), NULL);
 
 			return this->m_hWindow != NULL;
 		}
@@ -1109,7 +1111,7 @@ namespace dnyWinForms {
 				return false;
 
 			//Create listbox control
-			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"listbox", wszName.c_str(), WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_AUTOVSCROLL | LBS_NOTIFY, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), 0, (HINSTANCE)GetCurrentProcess(), NULL);
+			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"listbox", wszName.c_str(), WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_AUTOVSCROLL | LBS_NOTIFY, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), (HMENU)this->m_usMenuId, (HINSTANCE)GetCurrentProcess(), NULL);
 
 			return this->m_hWindow != NULL;
 		}
@@ -1280,7 +1282,7 @@ namespace dnyWinForms {
 				return false;
 
 			//Create listbox control
-			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, wszName.c_str(), WS_CHILD | WS_VISIBLE | LVS_REPORT, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), 0, (HINSTANCE)GetCurrentProcess(), NULL);
+			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, wszName.c_str(), WS_CHILD | WS_VISIBLE | LVS_REPORT, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), (HMENU)this->m_usMenuId, (HINSTANCE)GetCurrentProcess(), NULL);
 
 			return this->m_hWindow != NULL;
 		}

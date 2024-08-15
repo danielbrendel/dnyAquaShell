@@ -1,7 +1,12 @@
 #include "dnyas_sdk.h"
 #include "dnyWinForms.h"
 
+#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 IShellPluginAPI* g_pShellPluginAPI;
+HINSTANCE g_hDllModule;
+HANDLE g_hActx;
+ULONG_PTR g_ulpCookie;
 
 class ISpawnFormCommandInterface : public IResultCommandInterface<dnyInteger> {
 public:
@@ -195,6 +200,76 @@ public:
 	}
 
 } g_oSetCompFontCommandInterface;
+
+class IStartCompGroupCommandInterface : public IVoidCommandInterface {
+public:
+	IStartCompGroupCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+		
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		dnyWinForms::IBaseComponent* pBaseComp = pForm->FindComponent(pContext->GetPartString(2), pContext->GetPartString(3));
+		if (!pBaseComp)
+			return false;
+
+		return pBaseComp->StartGroup();
+		return true;
+	}
+
+} g_oStartCompGroupCommandInterface;
+
+class ISetCompGroupCommandInterface : public IVoidCommandInterface {
+public:
+	ISetCompGroupCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		dnyWinForms::IBaseComponent* pBaseComp = pForm->FindComponent(pContext->GetPartString(2), pContext->GetPartString(3));
+		if (!pBaseComp)
+			return false;
+
+		return pBaseComp->SetGroup();
+	}
+
+} g_oSetCompGroupCommandInterface;
+
+class IClearCompGroupCommandInterface : public IVoidCommandInterface {
+public:
+	IClearCompGroupCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		dnyWinForms::IBaseComponent* pBaseComp = pForm->FindComponent(pContext->GetPartString(2), pContext->GetPartString(3));
+		if (!pBaseComp)
+			return false;
+
+		return pBaseComp->ClearGroup();
+	}
+
+} g_oClearCompGroupCommandInterface;
 
 class ISpawnLabelCommandInterface : public IVoidCommandInterface {
 public:
@@ -1276,6 +1351,9 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcomptext", &g_oSetCompTextCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcompfont", &g_oSetCompFontCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_getcomptext", &g_oGetCompTextCommandInterface, CT_STRING);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_startcompgroup", &g_oStartCompGroupCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcompgroup", &g_oSetCompGroupCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_clearcompgroup", &g_oClearCompGroupCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawnlabel", &g_oSpawnLabelCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawnbutton", &g_oSpawnButtonCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawntextbox", &g_oSpawnTextboxCommandInterface, CT_VOID);
@@ -1321,13 +1399,29 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_isformvalid", &g_oFormValidCommand, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_process", &g_oProcessFormsCommand, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_freeform", &g_oFreeFormCommand, CT_VOID);
-	
+
+	ACTCTX actCtx = { 0 };
+	actCtx.cbSize = sizeof(actCtx);
+	actCtx.hModule = g_hDllModule;
+	actCtx.lpResourceName = MAKEINTRESOURCE(2);
+	actCtx.dwFlags = ACTCTX_FLAG_HMODULE_VALID | ACTCTX_FLAG_RESOURCE_NAME_VALID;
+
+	g_hActx = CreateActCtx(&actCtx);
+	if (g_hActx != INVALID_HANDLE_VALUE) {
+		ActivateActCtx(g_hActx, &g_ulpCookie);
+	}
+
 	return true;
 }
 
 void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
+
+	if (g_hActx != INVALID_HANDLE_VALUE) {
+		DeactivateActCtx(0, g_ulpCookie);
+		ReleaseActCtx(g_hActx);
+	}
 
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnform");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformpos");
@@ -1338,6 +1432,9 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcomptext");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcompfont");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_getcomptext");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_startcompgroup");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcompgroup");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_clearcompgroup");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnlabel");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnbutton");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawntextbox");
@@ -1387,5 +1484,9 @@ void dnyAS_PluginUnload(void)
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)
 {
+	if (fdwReason == DLL_PROCESS_ATTACH) {
+		g_hDllModule = hInstance;
+	}
+
 	return TRUE;
 }
