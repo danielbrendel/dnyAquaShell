@@ -399,6 +399,80 @@ namespace Array {
 			return this->RegisterArray(wszBaseName, eType, uiSize, std::vector<std::wstring>());
 		}
 
+		bool Clone(const std::wstring& wszSrcName, const std::wstring& wszCloneName)
+		{
+			//Clone an entire array
+
+			size_t uiArrayId;
+
+			//Check if clone name is already in use
+			if (this->FindArray(wszCloneName, &uiArrayId))
+				return false;
+
+			//Find array
+			if (!this->FindArray(wszSrcName, &uiArrayId))
+				return false;
+
+			//Create object and set initial data
+			dynamic_array_object sCloneObject;
+			sCloneObject.wszBaseName = wszCloneName;
+			sCloneObject.eType = this->m_vObjects[uiArrayId].eType;
+
+			//Register and set item duplicates
+			for (size_t i = 0; i < this->m_vObjects[uiArrayId].vArrayItems.size(); i++) {
+				cvarptr_t pCVar = pShellPluginAPI->Cv_RegisterCVar(wszCloneName + L"[" + std::to_wstring(i) + L"]", sCloneObject.eType);
+				if (!pCVar)
+					return false;
+
+				//Set duplicate array item values
+				switch (sCloneObject.eType) {
+					case CT_BOOL: {
+						ICVar<dnyBoolean>* pDestVar = (ICVar<dnyBoolean>*)pCVar;
+						ICVar<dnyBoolean>* pSrcVar = (ICVar<dnyBoolean>*)this->m_vObjects[uiArrayId].vArrayItems[i];
+						pDestVar->SetValue(pSrcVar->GetValue());
+						break;
+					}
+					case CT_INT: {
+						ICVar<dnyInteger>* pDestVar = (ICVar<dnyInteger>*)pCVar;
+						ICVar<dnyInteger>* pSrcVar = (ICVar<dnyInteger>*)this->m_vObjects[uiArrayId].vArrayItems[i];
+						pDestVar->SetValue(pSrcVar->GetValue());
+						break;
+					}
+					case CT_FLOAT: {
+						ICVar<dnyFloat>* pDestVar = (ICVar<dnyFloat>*)pCVar;
+						ICVar<dnyFloat>* pSrcVar = (ICVar<dnyFloat>*)this->m_vObjects[uiArrayId].vArrayItems[i];
+						pDestVar->SetValue(pSrcVar->GetValue());
+						break;
+					}
+					case CT_STRING: {
+						ICVar<dnyString>* pDestVar = (ICVar<dnyString>*)pCVar;
+						ICVar<dnyString>* pSrcVar = (ICVar<dnyString>*)this->m_vObjects[uiArrayId].vArrayItems[i];
+						pDestVar->SetValue(pSrcVar->GetValue());
+						break;
+					}
+					default:
+						return false;
+				}
+
+				//Add to list
+				sCloneObject.vArrayItems.push_back(pCVar);
+			}
+
+			//Register array length variable
+			ICVar<dnyInteger>* pLenVar = (ICVar<dnyInteger>*)pShellPluginAPI->Cv_RegisterCVar(wszCloneName + L".length", CT_INT);
+			if (!pLenVar)
+				return false;
+
+			//Set length value
+			pLenVar->SetValue(this->m_vObjects[uiArrayId].vArrayItems.size());
+			sCloneObject.pLenVar = pLenVar;
+			
+			//Add to list
+			this->m_vObjects.push_back(sCloneObject);
+
+			return true;
+		}
+
 		bool Insert(const std::wstring& wszBaseName, const dnyInteger iIndex, const std::wstring& wszExpression)
 		{
 			//Insert item into array
@@ -609,6 +683,21 @@ namespace Array {
 
 	} oResizeDynamicArray;
 
+	class ICloneDynamicArray : public IVoidCommandInterface {
+	public:
+		ICloneDynamicArray() {}
+
+		virtual bool CommandCallback(void* pArg1, void* pArg2)
+		{
+			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
+
+			pCodeContext->ReplaceAllVariables(pArg2);
+
+			return oDynamicArray.Clone(pCodeContext->GetPartString(1), pCodeContext->GetPartString(2));
+		}
+
+	} oCloneDynamicArray;
+
 	class IInsertItem : public IVoidCommandInterface {
 	public:
 		IInsertItem() {}
@@ -687,6 +776,7 @@ namespace Array {
 		REG_CMD(L"array_item_append", &oAppendItem, CT_VOID);
 		REG_CMD(L"array_item_remove", &oRemoveItem, CT_VOID);
 		REG_CMD(L"array_resize", &oResizeDynamicArray, CT_VOID);
+		REG_CMD(L"array_clone", &oCloneDynamicArray, CT_VOID);
 		REG_CMD(L"free_array", &oRemoveDynamicArray, CT_VOID);
 
 		return true;
