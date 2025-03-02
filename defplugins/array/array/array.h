@@ -699,13 +699,13 @@ namespace Array {
 		//Unegister commands
 		#define UNREG_CMD(n) if (!pShellPluginAPI->Cmd_UnregisterCommand(n)) return false;
 		UNREG_CMD(L"array");
-		UNREG_CMD(L"store_array_item");
-		UNREG_CMD(L"store_item_to_array");
-		UNREG_CMD(L"copy_array_item");
-		UNREG_CMD(L"resize_array");
+		UNREG_CMD(L"array_item_get");
+		UNREG_CMD(L"array_item_set");
+		UNREG_CMD(L"array_item_copy");
 		UNREG_CMD(L"array_item_insert");
 		UNREG_CMD(L"array_item_append");
 		UNREG_CMD(L"array_item_remove");
+		UNREG_CMD(L"array_resize");
 		UNREG_CMD(L"free_array");
 
 		return true;
