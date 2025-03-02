@@ -81,21 +81,41 @@ pause;
 * You can place a script named 'unload.dnys' in the 'scripts' directory of the base directory
   which will get executed when the shell gets unloaded. There you can place cleanup code
 
+## Executing script files
+
+Script files can be executed by running
+
+```
+dnyAquaShell.exe "path/to/a/script.dnys" [opt:args]
+```
+
+Arguments are optional, but can be provided if required.
+
+```
+dnyAquaShell.exe "path/to/a/script.dnys" "A string with multiple words" 1234 false true 5.23
+```
+
+In the context of a script, you can access the actual expressions as well as the argument count as follows:
+
+```
+%argc: Amount of arguments
+%argv[num]: Actual argument expression
+```
+
+If you have added the shell path to your environment PATH variable, then you can also perform actions from any directory as follows:
+```
+aquashell [args]
+```
+
 ## Command line arguments
 
 The following command line arguments exist:
 
 * -v: Prints out the version information
-* -e "path/to/a/script.dnys" [opt:args]: If an existing script file is provided, then the shell will try to execute it.
 * -c "script code": Execute script code that is provided as an argument.
 
 You can also add the shell path to your PATH environment variable using the following command line system command:
 * "add_path" "-u|-m": Adds the shell path to your PATH environment variable. Use -u for current user or -m for local machine.
-
-If you have added the shell path to your environment PATH variable, then you can also perform actions as follows:
-```
-aquashell [args]
-```
 
 ## Plugin API:
 Plugins must be written in compatibility with the shell application. 
