@@ -721,6 +721,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendkeystrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmousestrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_keybdevent");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_mouseevent");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addkeyevent");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addmouseevent");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_clpbsetstring");
