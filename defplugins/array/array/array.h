@@ -545,9 +545,9 @@ namespace Array {
 
 	} oRegisterDynamicArray;
 
-	class ISetDynamicArrayItem : public IVoidCommandInterface {
+	class IFetchFromDynamicArrayItem : public IVoidCommandInterface {
 	public:
-		ISetDynamicArrayItem() {}
+		IFetchFromDynamicArrayItem() {}
 
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
@@ -560,7 +560,7 @@ namespace Array {
 			return oDynamicArray.StoreArrayItemValueToTarget(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2), pTargetVar);
 		}
 
-	} oSetDynamicArrayItem;
+	} oFetchFromDynamicArrayItem;
 
 	class ISaveToDynamicArrayItem : public IVoidCommandInterface {
 	public:
@@ -680,8 +680,8 @@ namespace Array {
 		//Register commands
 		#define REG_CMD(n, ptr, type) if (!pShellPluginAPI->Cmd_RegisterCommand(n, ptr, type)) return false;
 		REG_CMD(L"array", &oRegisterDynamicArray, CT_VOID);
-		REG_CMD(L"store_array_item", &oSetDynamicArrayItem, CT_VOID);
-		REG_CMD(L"store_item_to_array", &oSaveToDynamicArrayItem, CT_VOID);
+		REG_CMD(L"array_item_get", &oFetchFromDynamicArrayItem, CT_VOID);
+		REG_CMD(L"array_item_set", &oSaveToDynamicArrayItem, CT_VOID);
 		REG_CMD(L"copy_array_item", &oCopyDynamicArrayItem, CT_VOID);
 		REG_CMD(L"resize_array", &oResizeDynamicArray, CT_VOID);
 		REG_CMD(L"array_item_insert", &oInsertItem, CT_VOID);
