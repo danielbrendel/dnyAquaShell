@@ -367,7 +367,7 @@ namespace DxSound {
 
 			pContext->ReplaceAllVariables(pInterfaceObject);
 
-			return oDxSound.Play((HDXSOUND)pContext->GetPartInt(1), (long)pContext->GetPartInt(2), 0);
+			return oDxSound.Play((HDXSOUND)pContext->GetPartInt(1), (long)pContext->GetPartInt(2), pContext->GetPartInt(3));
 		}
 
 	} oPlaySoundCommandInterface;
@@ -412,6 +412,9 @@ namespace DxSound {
 			return false;
 
 		pShellPluginAPI = pInterface;
+
+		pShellPluginAPI->Scr_ExecuteCode(L"const DXSND_ONCE int <= 0;");
+		pShellPluginAPI->Scr_ExecuteCode(L"const DXSND_LOOP int <= " + std::to_wstring(DSBPLAY_LOOPING) + L"; ");
 
 		#define REG_CMD(n, o, t) if (!pShellPluginAPI->Cmd_RegisterCommand(n, &o, t)) return false;
 		REG_CMD(L"dx.snd.initialize", oInitializeCommandInterface, CT_VOID);
