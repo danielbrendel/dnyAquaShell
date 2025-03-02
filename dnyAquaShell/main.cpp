@@ -712,6 +712,42 @@ namespace ShellInterface {
 
 		} g_oSleepCommandInterface;
 
+		class IBitOpCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
+		public:
+			IBitOpCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				std::wstring wszOperation = pContext->GetPartString(1);
+				std::vector<std::wstring> vOperands = pContext->GetPartArray(2);
+
+				if (vOperands.size() < 2) {
+					return false;
+				}
+
+				dnyScriptInterpreter::dnyInteger iResultValue = (vOperands.size() > 0) ? (dnyScriptInterpreter::dnyInteger)_wtoi64(vOperands[0].c_str()) : 0;
+
+				for (size_t i = 1; i < vOperands.size(); i++) {
+					if (wszOperation == L"or") {
+						iResultValue = iResultValue | (dnyScriptInterpreter::dnyInteger)_wtoi64(vOperands[i].c_str());
+					} else if (wszOperation == L"and") {
+						iResultValue = iResultValue & (dnyScriptInterpreter::dnyInteger)_wtoi64(vOperands[i].c_str());
+					} else if (wszOperation == L"xor") {
+						iResultValue = iResultValue ^ (dnyScriptInterpreter::dnyInteger)_wtoi64(vOperands[i].c_str());
+					}
+				}
+
+				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(iResultValue);
+
+				return true;
+			}
+
+		} g_oBitOpCommandInterface;
+
 		class IGetTickCountCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
 		public:
 			IGetTickCountCommandInterface() {}
@@ -847,6 +883,7 @@ namespace ShellInterface {
 			SI_ADD_COMMAND(L"textview", &g_oTextFilePrinterCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"random", &g_oRandomCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"sleep", &g_oSleepCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"bitop", &g_oBitOpCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"gettickcount", &g_oGetTickCountCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"getsystemerror", &g_oGetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"setsystemerror", &g_oSetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
