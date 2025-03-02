@@ -114,9 +114,13 @@ The following command line arguments exist:
 * -v: Prints out the version information
 * -c "script code": Execute script code that is provided as an argument
 * -libs: Lists all available plugins
+* -path user|machine: Adds the shell path to your PATH environment variable, either for current user or local machine
 
-You can also add the shell path to your PATH environment variable using the following command line system command:
-* "add_path" "-u|-m": Adds the shell path to your PATH environment variable. Use -u for current user or -m for local machine.
+You can run them via
+
+```
+dnyAquaShell.exe -[cmd] [opt:args]
+```
 
 ## Plugin API:
 Plugins must be written in compatibility with the shell application. 
