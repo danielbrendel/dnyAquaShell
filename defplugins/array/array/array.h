@@ -686,7 +686,7 @@ namespace Array {
 		REG_CMD(L"resize_array", &oResizeDynamicArray, CT_VOID);
 		REG_CMD(L"array_item_insert", &oInsertItem, CT_VOID);
 		REG_CMD(L"array_item_append", &oAppendItem, CT_VOID);
-		REG_CMD(L"item_remove", &oRemoveItem, CT_VOID);
+		REG_CMD(L"array_item_remove", &oRemoveItem, CT_VOID);
 		REG_CMD(L"free_array", &oRemoveDynamicArray, CT_VOID);
 
 		return true;
@@ -705,7 +705,7 @@ namespace Array {
 		UNREG_CMD(L"resize_array");
 		UNREG_CMD(L"array_item_insert");
 		UNREG_CMD(L"array_item_append");
-		UNREG_CMD(L"item_remove");
+		UNREG_CMD(L"array_item_remove");
 		UNREG_CMD(L"free_array");
 
 		return true;
