@@ -796,6 +796,7 @@ namespace Array {
 		UNREG_CMD(L"array_item_append");
 		UNREG_CMD(L"array_item_remove");
 		UNREG_CMD(L"array_resize");
+		UNREG_CMD(L"array_clone");
 		UNREG_CMD(L"free_array");
 
 		return true;
