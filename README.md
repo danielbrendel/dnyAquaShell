@@ -5,7 +5,7 @@
 
 <p align="center">
     A scripting and automation shell for Windows<br/>
-    (C) 2017 - 2024 by Daniel Brendel<br/>
+    (C) 2017 - 2025 by Daniel Brendel<br/>
     Released under the MIT license
 </p>
 
