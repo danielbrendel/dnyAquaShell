@@ -995,6 +995,7 @@ namespace ShellInterface {
 			this->m_pScriptInt->UnregisterCommand(L"textview");
 			this->m_pScriptInt->UnregisterCommand(L"random");
 			this->m_pScriptInt->UnregisterCommand(L"sleep");
+			this->m_pScriptInt->UnregisterCommand(L"bitop");
 			this->m_pScriptInt->UnregisterCommand(L"gettickcount");
 			this->m_pScriptInt->UnregisterCommand(L"getsystemerror");
 			this->m_pScriptInt->UnregisterCommand(L"setsystemerror");
