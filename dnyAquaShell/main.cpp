@@ -178,34 +178,6 @@ namespace ShellInterface {
 		return bResult;
 	}
 
-	bool HandleCommandLineCommands(int argc, wchar_t* argv[])
-	{
-		//Handle special command line commands
-
-		if (argc <= 1) {
-			return false;
-		}
-
-		std::wstring wszCmd = std::wstring(argv[1]);
-		if (wszCmd == L"-v") {
-			PrintAboutInfo();
-
-			return true;
-		} else if (wszCmd == L"add_path") {
-			std::wstring wszContext = (argc == 3) ? argv[2] : L"-u";
-
-			if (wszContext == L"-u") {
-				((AddShellToPath(HKEY_CURRENT_USER, L"Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
-			} else if (wszContext == L"-m") {
-				((AddShellToPath(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
-			}
-
-			return true;
-		}
-
-		return false;
-	}
-
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
 
 	class CExtendedScriptingInterface : public dnyScriptInterpreter::CScriptingInterface {
@@ -920,7 +892,9 @@ namespace ShellInterface {
 							std::wcout << L"** Error ** No script input provided" << std::endl;
 						}
 					} else {
-						if (wszArgCmd == L"-c") {
+						if (wszArgCmd == L"-v") {
+							PrintAboutInfo();
+						} else if (wszArgCmd == L"-c") {
 							std::wstring wszExecCode = (argc >= 3) ? argv[2] : L"";
 							if (wszExecCode.length() > 0) {
 								this->m_pScriptInt->ExecuteCode(wszExecCode);
@@ -934,6 +908,14 @@ namespace ShellInterface {
 						} else if (wszArgCmd == L"-libs") {
 							this->m_pPluginInt->LoadAllPlugins(this->m_wszBaseDir + L"plugins", this->m_pShellInt);
 							this->m_pPluginInt->ListPlugins();
+						} else if (wszArgCmd == L"-path") {
+							std::wstring wszContext = (argc == 3) ? argv[2] : L"user";
+
+							if (wszContext == L"user") {
+								((AddShellToPath(HKEY_CURRENT_USER, L"Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
+							} else if (wszContext == L"machine") {
+								((AddShellToPath(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
+							}
 						}
 					}
 				}
@@ -1099,10 +1081,6 @@ namespace ShellInterface {
 int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
 	//Windows entry point
-	
-	if (ShellInterface::HandleCommandLineCommands(argc, argv)) {
-		return EXIT_SUCCESS;
-	}
 
 	ShellInterface::CShellInterface* pShellInterface = new ShellInterface::CShellInterface(argc, argv);
 	if (!pShellInterface) {
