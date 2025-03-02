@@ -899,18 +899,18 @@ namespace ShellInterface {
 				if (argc > 1) {
 					std::wstring wszArgCmd = argv[1];
 
-					if (wszArgCmd == L"-e") {
-						std::wstring wszExecScript = (argc >= 3) ? argv[2] : L"";
+					if (wszArgCmd[0] != '-') {
+						std::wstring wszExecScript = (argc >= 2) ? argv[1] : L"";
 						if (wszExecScript.length() > 0) {
 							if (wszExecScript.find(L":") == std::wstring::npos) {
 								wszExecScript = GetWorkingDirectory() + L"\\" + wszExecScript;
 							}
 
 							std::wstring wszExecArgs = L"";
-							for (int i = 3; i < argc; i++) {
+							for (int i = 2; i < argc; i++) {
 								wszExecArgs += L" \"" + std::wstring(argv[i]) + L"\"";
 							}
-							
+
 							this->m_pScriptInt->ExecuteCode(L"exec \"" + wszExecScript + L"\"" + wszExecArgs + L";");
 
 							if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
@@ -919,16 +919,18 @@ namespace ShellInterface {
 						} else {
 							std::wcout << L"** Error ** No script input provided" << std::endl;
 						}
-					} else if (wszArgCmd == L"-c") {
-						std::wstring wszExecCode = (argc >= 3) ? argv[2] : L"";
-						if (wszExecCode.length() > 0) {
-							this->m_pScriptInt->ExecuteCode(wszExecCode);
+					} else {
+						if (wszArgCmd == L"-c") {
+							std::wstring wszExecCode = (argc >= 3) ? argv[2] : L"";
+							if (wszExecCode.length() > 0) {
+								this->m_pScriptInt->ExecuteCode(wszExecCode);
 
-							if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
-								std::wcout << L"** Error **\n" << wszExecCode << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
+								if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
+									std::wcout << L"** Error **\n" << wszExecCode << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
+								}
+							} else {
+								std::wcout << L"** Error ** No code input provided" << std::endl;
 							}
-						} else {
-							std::wcout << L"** Error ** No code input provided" << std::endl;
 						}
 					}
 				}
