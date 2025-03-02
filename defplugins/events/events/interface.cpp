@@ -63,6 +63,12 @@ public:
 		return true;
 	}
 
+	//Indicate if event exists
+	inline bool Exists(const std::wstring& wszName)
+	{
+		return this->GetEventData(wszName) != nullptr;
+	}
+
 	//Raise event
 	bool Raise(const std::wstring& wszName, const std::vector<std::wstring>& vArgs, const std::wstring& wszStorageVar)
 	{
@@ -119,6 +125,23 @@ public:
 
 } g_oAddEventHandlerCommandInterface;
 
+class IEventExistsHandlerCommandInterface : public IResultCommandInterface<dnyBoolean> {
+public:
+	IEventExistsHandlerCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		this->SetResult(g_oEventMgr.Exists(pContext->GetPartString(1)));
+
+		return true;
+	}
+
+} g_oEventExistsHandlerCommandInterface;
+
 class IRaiseEventCommandInterface : public IVoidCommandInterface {
 public:
 	IRaiseEventCommandInterface() {}
@@ -166,6 +189,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Register example commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.register", &g_oRegEventCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.add", &g_oAddEventHandlerCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.exists", &g_oEventExistsHandlerCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.raise", &g_oRaiseEventCommandInterface, CT_VOID);
 
 	return true;
@@ -177,6 +201,7 @@ void dnyAS_PluginUnload(void)
 
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.register");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.add");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.exists");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.raise");
 }
 
