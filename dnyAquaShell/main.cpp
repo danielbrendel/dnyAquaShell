@@ -862,9 +862,13 @@ namespace ShellInterface {
 				return false;
 			}
 
-			//Register constant for shell version
+			//Register constants for shell version
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_SHELL_VERSION string <= \"" DNY_AS_PRODUCT_VERSION L"\";");
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_SHELL_VERNUM int <= " + std::to_wstring(DNY_AS_PRODUCT_VERSION_W) + L";");
+
+			//Register constants for platform and build info
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_PLATFORM_NAME string <= \"" PLATFORM_NAME L"\";");
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_BUILD_TYPE string <= \"" BUILD_TYPE L"\";");
 
 			//Register interactive-mode indicator constant
 			std::wstring wszConstStrVal = ((this->m_bInteractiveMode) ? L"true" : L"false");

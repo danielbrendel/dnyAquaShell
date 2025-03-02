@@ -56,6 +56,8 @@ pause;
 ## Helper constants and variables
 * DNYAS_SHELL_VERSION: Contains the current product version as string
 * DNYAS_SHELL_VERNUM: Contains the current product version as a numeric value, in a concatenated manner
+* DNYAS_PLATFORM_NAME: The platform name of the product build, either x64 or x86
+* DNYAS_BUILD_TYPE: The build type of the product, either Release or Debug
 * DNYAS_IS_INTERACTIVE_MODE: Boolean value that indicates whether or not the current script code runs within the interactive mode
 * DNYAS_BASE_PATH: Contains the base path of the shell
 * DNYAS_PLUGIN_PATH: Contains the path to the plugin directory
