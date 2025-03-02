@@ -1969,7 +1969,7 @@ namespace dnyWinForms {
 		if (!pForm)
 			return nullptr;
 
-		if (pForm->ComponentWithNameOfTypeExists(L"CProgressbar", wszImageboxName))
+		if (pForm->ComponentWithNameOfTypeExists(L"CImagebox", wszImageboxName))
 			return nullptr;
 
 		CImagebox* pImagebox = new CImagebox(pForm->GetHandle(), wszImageboxName, WFDimension(x, y), WFDimension(w, h));
@@ -1978,7 +1978,7 @@ namespace dnyWinForms {
 
 		pImagebox->PostInstantiate();
 		
-		if (!pImagebox->SetImage(wszImageFile)) {
+		if ((wszImageFile.length() > 0) && (!pImagebox->SetImage(wszImageFile))) {
 			delete pImagebox;
 			return nullptr;
 		}

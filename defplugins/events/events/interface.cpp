@@ -27,7 +27,7 @@ public:
 	CEventMgr() {}
 	~CEventMgr() {}
 
-	//Register event
+	//Register event context
 	bool Register(const std::wstring& wszName, const size_t uiArgCount, bool bMultipleHandlers = true)
 	{
 		if (!wszName.length())
@@ -63,6 +63,12 @@ public:
 		return true;
 	}
 
+	//Indicate if event exists
+	inline bool Exists(const std::wstring& wszName)
+	{
+		return this->GetEventData(wszName) != nullptr;
+	}
+
 	//Raise event
 	bool Raise(const std::wstring& wszName, const std::vector<std::wstring>& vArgs, const std::wstring& wszStorageVar)
 	{
@@ -86,6 +92,20 @@ public:
 			
 			g_pShellPluginAPI->Scr_ExecuteCode(wszCode);
 		}
+	}
+
+	//Remove an event context
+	bool Remove(const std::wstring& wszName)
+	{
+		for (size_t i = 0; i < this->m_vEvents.size(); i++) {
+			if (this->m_vEvents[i].wszName == wszName) {
+				this->m_vEvents.erase(this->m_vEvents.begin() + i);
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 } g_oEventMgr;
 
@@ -119,6 +139,23 @@ public:
 
 } g_oAddEventHandlerCommandInterface;
 
+class IEventExistsHandlerCommandInterface : public IResultCommandInterface<dnyBoolean> {
+public:
+	IEventExistsHandlerCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		this->SetResult(g_oEventMgr.Exists(pContext->GetPartString(1)));
+
+		return true;
+	}
+
+} g_oEventExistsHandlerCommandInterface;
+
 class IRaiseEventCommandInterface : public IVoidCommandInterface {
 public:
 	IRaiseEventCommandInterface() {}
@@ -135,6 +172,21 @@ public:
 	}
 
 } g_oRaiseEventCommandInterface;
+
+class IReleaseEventHandlerCommandInterface : public IVoidCommandInterface {
+public:
+	IReleaseEventHandlerCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		return g_oEventMgr.Remove(pContext->GetPartString(1));
+	}
+
+} g_oReleaseEventHandlerCommandInterface;
 
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
@@ -164,9 +216,11 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
 	//Register example commands
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.register", &g_oRegEventCommandInterface, CT_VOID);
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.add", &g_oAddEventHandlerCommandInterface, CT_VOID);
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.raise", &g_oRaiseEventCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.register", &g_oRegEventCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.add", &g_oAddEventHandlerCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.exists", &g_oEventExistsHandlerCommandInterface, CT_BOOL);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.raise", &g_oRaiseEventCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.release", &g_oReleaseEventHandlerCommandInterface, CT_VOID);
 
 	return true;
 }
@@ -175,9 +229,11 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
-	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.register");
-	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.add");
-	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.raise");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.register");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.add");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.exists");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.raise");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.release");
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)

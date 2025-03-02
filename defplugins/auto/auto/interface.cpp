@@ -429,6 +429,38 @@ public:
 	}
 } g_oSendMouseInputCommandInterface;
 
+class IKeyboardEventInputCommandInterface : public IVoidCommandInterface {
+public:
+	IKeyboardEventInputCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		Automation::KeyboardEvent(pContext->GetPartInt(1), pContext->GetPartInt(2), pContext->GetPartInt(3));
+
+		return true;
+	}
+} g_oKeyboardEventInputCommandInterface;
+
+class IMouseEventInputCommandInterface : public IVoidCommandInterface {
+public:
+	IMouseEventInputCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		Automation::MouseEvent(pContext->GetPartInt(1), pContext->GetPartInt(2), pContext->GetPartInt(3), pContext->GetPartInt(4));
+
+		return true;
+	}
+} g_oMouseEventInputCommandInterface;
+
 void Event_KeyboardHook(const std::wstring& wszString, bool bIsDown, bool bWithShift, bool bWithCtrl, bool bWithAlt)
 {
 	/*g_pShellPluginAPI->Fnc_BeginFunctionCall(wszString, CT_VOID);
@@ -604,6 +636,24 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	Automation::Init(pInterfaceData);
 	Timer::Init(pInterfaceData);
 
+	//Register constants
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_KBD_EXTENDEDKEY int <= " + std::to_wstring(KEYEVENTF_EXTENDEDKEY) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_KBD_KEYUP int <= " + std::to_wstring(KEYEVENTF_KEYUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_ABSOLUTE int <= " + std::to_wstring(MOUSEEVENTF_ABSOLUTE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_LEFTDOWN int <= " + std::to_wstring(MOUSEEVENTF_LEFTDOWN) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_LEFTUP int <= " + std::to_wstring(MOUSEEVENTF_LEFTUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_MIDDLEDOWN int <= " + std::to_wstring(MOUSEEVENTF_MIDDLEDOWN) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_MIDDLEUP int <= " + std::to_wstring(MOUSEEVENTF_MIDDLEUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_MOVE int <= " + std::to_wstring(MOUSEEVENTF_MOVE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_RIGHTDOWN int <= " + std::to_wstring(MOUSEEVENTF_RIGHTDOWN) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_RIGHTUP int <= " + std::to_wstring(MOUSEEVENTF_RIGHTUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_XDOWN int <= " + std::to_wstring(MOUSEEVENTF_XDOWN) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_XUP int <= " + std::to_wstring(MOUSEEVENTF_XUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_WHEEL int <= " + std::to_wstring(MOUSEEVENTF_WHEEL) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_HWHEEL int <= " + std::to_wstring(MOUSEEVENTF_HWHEEL) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_XBUTTON1 int <= " + std::to_wstring(XBUTTON1) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_XBUTTON2 int <= " + std::to_wstring(XBUTTON2) + L";");
+
 	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_findwindow", &g_oFindWindowCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_iswindow", &g_oIsWindowCommandInterface, CT_BOOL);
@@ -627,6 +677,8 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_postmessage", &g_oPostMessageCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendkeystrokes", &g_oSendKeyboardInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmousestrokes", &g_oSendMouseInputCommandInterface, CT_BOOL);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_keybdevent", &g_oKeyboardEventInputCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_mouseevent", &g_oMouseEventInputCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addkeyevent", &g_oAddKeyboardHookCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addmouseevent", &g_oAddMouseHookCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_clpbsetstring", &g_oSetClipboardStringCommandInterface, CT_VOID);
@@ -668,6 +720,8 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_postmessage");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendkeystrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmousestrokes");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_keybdevent");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_mouseevent");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addkeyevent");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addmouseevent");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_clpbsetstring");

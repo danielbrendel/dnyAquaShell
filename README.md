@@ -5,7 +5,7 @@
 
 <p align="center">
     A scripting and automation shell for Windows<br/>
-    (C) 2017 - 2024 by Daniel Brendel<br/>
+    (C) 2017 - 2025 by Daniel Brendel<br/>
     Released under the MIT license
 </p>
 
@@ -55,6 +55,7 @@ pause;
 
 ## Helper constants and variables
 * DNYAS_IS_INTERACTIVE_MODE: Boolean value that indicates whether or not the current script code runs within the interactive mode
+* DNYAS_BASE_PATH: Contains the base path of the shell
 * CR: Represents a carriage return character
 * LF: Represents a line feed character
 * void: Can be used with commands or functions if you want to dismiss the result value.
@@ -65,6 +66,7 @@ pause;
 * textview (file) # Prints the text contents of the file to the standard output
 * random (start) (end) (result var) # Generates a random number within the range and stores it to the result var
 * sleep (milliseconds) # Pauses the main thread for N milliseconds
+* bitop (operation) (array of operands) (result var) # Performs either a bitwise OR, AND or XOR operation and stores it to the result var
 * gettickcount (result var) # Stores the number  of milliseconds that have elapsed since system start into the result var
 * getsystemerror (result var) # Stores the last system error code of the shell process context into the result var
 * setsystemerror (code) # Sets the last system error code of the shell process context
@@ -81,20 +83,45 @@ pause;
 * You can place a script named 'unload.dnys' in the 'scripts' directory of the base directory
   which will get executed when the shell gets unloaded. There you can place cleanup code
 
+## Executing script files
+
+Script files can be executed by running
+
+```
+dnyAquaShell.exe "path/to/a/script.dnys" [opt:args]
+```
+
+Arguments are optional, but can be provided if required.
+
+```
+dnyAquaShell.exe "path/to/a/script.dnys" "A string with multiple words" 1234 false true 5.23
+```
+
+In the context of a script, you can access the actual expressions as well as the argument count as follows:
+
+```
+%argc: Amount of arguments
+%argv[num]: Actual argument expression
+```
+
+If you have added the shell path to your environment PATH variable, then you can also perform actions from any directory as follows:
+```
+aquashell [args]
+```
+
 ## Command line arguments
 
 The following command line arguments exist:
 
 * -v: Prints out the version information
-* -e "path/to/a/script.dnys" [opt:args]: If an existing script file is provided, then the shell will try to execute it.
-* -c "script code": Execute script code that is provided as an argument.
+* -c "script code": Execute script code that is provided as an argument
+* -libs: Lists all available plugins
+* -path user|machine: Adds the shell path to your PATH environment variable, either for current user or local machine
 
-You can also add the shell path to your PATH environment variable using the following command line system command:
-* "add_path" "-u|-m": Adds the shell path to your PATH environment variable. Use -u for current user or -m for local machine.
+You can run them via
 
-If you have added the shell path to your environment PATH variable, then you can also perform actions as follows:
 ```
-aquashell [args]
+dnyAquaShell.exe -[cmd] [opt:args]
 ```
 
 ## Plugin API:

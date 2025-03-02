@@ -554,6 +554,14 @@ namespace Automation {
 	{
 		return pSendInput->MouSend(wszInputStr, bWithCtrl, bWithShift, bWithAlt);
 	}
+	inline void KeyboardEvent(int vk, int scan, int flags)
+	{
+		keybd_event((BYTE)vk, (BYTE)scan, (DWORD)flags, 0);
+	}
+	inline void MouseEvent(int flags, int x, int y, int data)
+	{
+		mouse_event((DWORD)flags, (DWORD)x, (DWORD)y, (DWORD)data, 0);
+	}
 
 	class CInput* pInput = nullptr;
 	LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);

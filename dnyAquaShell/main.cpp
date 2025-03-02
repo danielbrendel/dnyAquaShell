@@ -9,7 +9,7 @@
 /*
 	AquaShell (dnyAquaShell) developed by Daniel Brendel
 
-	(C) 2017 - 2024 by Daniel Brendel
+	(C) 2017 - 2025 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com
@@ -176,34 +176,6 @@ namespace ShellInterface {
 		}
 
 		return bResult;
-	}
-
-	bool HandleCommandLineCommands(int argc, wchar_t* argv[])
-	{
-		//Handle special command line commands
-
-		if (argc <= 1) {
-			return false;
-		}
-
-		std::wstring wszCmd = std::wstring(argv[1]);
-		if (wszCmd == L"-v") {
-			PrintAboutInfo();
-
-			return true;
-		} else if (wszCmd == L"add_path") {
-			std::wstring wszContext = (argc == 3) ? argv[2] : L"-u";
-
-			if (wszContext == L"-u") {
-				((AddShellToPath(HKEY_CURRENT_USER, L"Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
-			} else if (wszContext == L"-m") {
-				((AddShellToPath(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
-			}
-
-			return true;
-		}
-
-		return false;
 	}
 
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
@@ -715,9 +687,9 @@ namespace ShellInterface {
 				dnyScriptInterpreter::dnyInteger iBegin = pContext->GetPartInt(1);
 				dnyScriptInterpreter::dnyInteger iEnd = pContext->GetPartInt(2);
 				
-				dnyScriptInterpreter::dnyInteger iRange = iEnd - iBegin;
+				dnyScriptInterpreter::dnyInteger iRndNum = (rand() % (iEnd - iBegin)) + iBegin;
 
-				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(rand() % (int)iRange);
+				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(iRndNum);
 
 				return true;
 			}
@@ -739,6 +711,42 @@ namespace ShellInterface {
 			}
 
 		} g_oSleepCommandInterface;
+
+		class IBitOpCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
+		public:
+			IBitOpCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				std::wstring wszOperation = pContext->GetPartString(1);
+				std::vector<std::wstring> vOperands = pContext->GetPartArray(2);
+
+				if (vOperands.size() < 2) {
+					return false;
+				}
+
+				dnyScriptInterpreter::dnyInteger iResultValue = (vOperands.size() > 0) ? (dnyScriptInterpreter::dnyInteger)_wtoi64(vOperands[0].c_str()) : 0;
+
+				for (size_t i = 1; i < vOperands.size(); i++) {
+					if (wszOperation == L"or") {
+						iResultValue = iResultValue | (dnyScriptInterpreter::dnyInteger)_wtoi64(vOperands[i].c_str());
+					} else if (wszOperation == L"and") {
+						iResultValue = iResultValue & (dnyScriptInterpreter::dnyInteger)_wtoi64(vOperands[i].c_str());
+					} else if (wszOperation == L"xor") {
+						iResultValue = iResultValue ^ (dnyScriptInterpreter::dnyInteger)_wtoi64(vOperands[i].c_str());
+					}
+				}
+
+				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(iResultValue);
+
+				return true;
+			}
+
+		} g_oBitOpCommandInterface;
 
 		class IGetTickCountCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
 		public:
@@ -862,6 +870,9 @@ namespace ShellInterface {
 			this->m_pScriptInt->ExecuteCode(L"const CR string <= \"\r\";");
 			this->m_pScriptInt->ExecuteCode(L"const LF string <= \"\n\";");
 
+			//Register constant for shell base path
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_BASE_PATH string <= \"" + this->m_wszBaseDir + L"\";");
+			
 			//Register void variable in order to allow dropping result values
 			this->m_pScriptInt->ExecuteCode(L"global void string;");
 
@@ -872,6 +883,7 @@ namespace ShellInterface {
 			SI_ADD_COMMAND(L"textview", &g_oTextFilePrinterCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"random", &g_oRandomCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"sleep", &g_oSleepCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"bitop", &g_oBitOpCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"gettickcount", &g_oGetTickCountCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"getsystemerror", &g_oGetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"setsystemerror", &g_oSetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
@@ -899,18 +911,18 @@ namespace ShellInterface {
 				if (argc > 1) {
 					std::wstring wszArgCmd = argv[1];
 
-					if (wszArgCmd == L"-e") {
-						std::wstring wszExecScript = (argc >= 3) ? argv[2] : L"";
+					if (wszArgCmd[0] != '-') {
+						std::wstring wszExecScript = (argc >= 2) ? argv[1] : L"";
 						if (wszExecScript.length() > 0) {
 							if (wszExecScript.find(L":") == std::wstring::npos) {
 								wszExecScript = GetWorkingDirectory() + L"\\" + wszExecScript;
 							}
 
 							std::wstring wszExecArgs = L"";
-							for (int i = 3; i < argc; i++) {
+							for (int i = 2; i < argc; i++) {
 								wszExecArgs += L" \"" + std::wstring(argv[i]) + L"\"";
 							}
-							
+
 							this->m_pScriptInt->ExecuteCode(L"exec \"" + wszExecScript + L"\"" + wszExecArgs + L";");
 
 							if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
@@ -919,16 +931,31 @@ namespace ShellInterface {
 						} else {
 							std::wcout << L"** Error ** No script input provided" << std::endl;
 						}
-					} else if (wszArgCmd == L"-c") {
-						std::wstring wszExecCode = (argc >= 3) ? argv[2] : L"";
-						if (wszExecCode.length() > 0) {
-							this->m_pScriptInt->ExecuteCode(wszExecCode);
+					} else {
+						if (wszArgCmd == L"-v") {
+							PrintAboutInfo();
+						} else if (wszArgCmd == L"-c") {
+							std::wstring wszExecCode = (argc >= 3) ? argv[2] : L"";
+							if (wszExecCode.length() > 0) {
+								this->m_pScriptInt->ExecuteCode(wszExecCode);
 
-							if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
-								std::wcout << L"** Error **\n" << wszExecCode << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
+								if (dnyScriptInterpreter::GetErrorInformation().GetErrorCode() != dnyScriptInterpreter::SET_NO_ERROR) {
+									std::wcout << L"** Error **\n" << wszExecCode << L" (" << dnyScriptInterpreter::GetErrorInformation().GetErrorCode() << ")\n" << dnyScriptInterpreter::GetErrorInformation().GetErrorText() << std::endl;
+								}
+							} else {
+								std::wcout << L"** Error ** No code input provided" << std::endl;
 							}
-						} else {
-							std::wcout << L"** Error ** No code input provided" << std::endl;
+						} else if (wszArgCmd == L"-libs") {
+							this->m_pPluginInt->LoadAllPlugins(this->m_wszBaseDir + L"plugins", this->m_pShellInt);
+							this->m_pPluginInt->ListPlugins();
+						} else if (wszArgCmd == L"-path") {
+							std::wstring wszContext = (argc == 3) ? argv[2] : L"user";
+
+							if (wszContext == L"user") {
+								((AddShellToPath(HKEY_CURRENT_USER, L"Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
+							} else if (wszContext == L"machine") {
+								((AddShellToPath(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment")) ? std::wcout << L"Success" << std::endl : std::wcout << L"Error: " << GetLastError() << std::endl);
+							}
 						}
 					}
 				}
@@ -968,6 +995,7 @@ namespace ShellInterface {
 			this->m_pScriptInt->UnregisterCommand(L"textview");
 			this->m_pScriptInt->UnregisterCommand(L"random");
 			this->m_pScriptInt->UnregisterCommand(L"sleep");
+			this->m_pScriptInt->UnregisterCommand(L"bitop");
 			this->m_pScriptInt->UnregisterCommand(L"gettickcount");
 			this->m_pScriptInt->UnregisterCommand(L"getsystemerror");
 			this->m_pScriptInt->UnregisterCommand(L"setsystemerror");
@@ -1094,10 +1122,6 @@ namespace ShellInterface {
 int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
 	//Windows entry point
-	
-	if (ShellInterface::HandleCommandLineCommands(argc, argv)) {
-		return EXIT_SUCCESS;
-	}
 
 	ShellInterface::CShellInterface* pShellInterface = new ShellInterface::CShellInterface(argc, argv);
 	if (!pShellInterface) {
