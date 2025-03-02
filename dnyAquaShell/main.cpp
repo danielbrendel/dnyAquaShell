@@ -687,9 +687,9 @@ namespace ShellInterface {
 				dnyScriptInterpreter::dnyInteger iBegin = pContext->GetPartInt(1);
 				dnyScriptInterpreter::dnyInteger iEnd = pContext->GetPartInt(2);
 				
-				dnyScriptInterpreter::dnyInteger iRange = iEnd - iBegin;
+				dnyScriptInterpreter::dnyInteger iRndNum = (rand() % (iEnd - iBegin)) + iBegin;
 
-				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(rand() % (int)iRange);
+				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(iRndNum);
 
 				return true;
 			}
