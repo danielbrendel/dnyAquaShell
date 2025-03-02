@@ -66,6 +66,7 @@ pause;
 * textview (file) # Prints the text contents of the file to the standard output
 * random (start) (end) (result var) # Generates a random number within the range and stores it to the result var
 * sleep (milliseconds) # Pauses the main thread for N milliseconds
+* bitop (operation) (array of operands) (result var) # Performs either a bitwise OR, AND or XOR operation and stores it to the result var
 * gettickcount (result var) # Stores the number  of milliseconds that have elapsed since system start into the result var
 * getsystemerror (result var) # Stores the last system error code of the shell process context into the result var
 * setsystemerror (code) # Sets the last system error code of the shell process context
