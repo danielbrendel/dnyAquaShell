@@ -220,7 +220,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.add", &g_oAddEventHandlerCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.exists", &g_oEventExistsHandlerCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.raise", &g_oRaiseEventCommandInterface, CT_VOID);
-	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.release", &g_oReleaseEventHandlerCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.release", &g_oReleaseEventHandlerCommandInterface, CT_VOID);
 
 	return true;
 }
@@ -233,7 +233,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.add");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.exists");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.raise");
-	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.release");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.release");
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)
