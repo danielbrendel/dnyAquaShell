@@ -931,6 +931,9 @@ namespace ShellInterface {
 							} else {
 								std::wcout << L"** Error ** No code input provided" << std::endl;
 							}
+						} else if (wszArgCmd == L"-libs") {
+							this->m_pPluginInt->LoadAllPlugins(this->m_wszBaseDir + L"plugins", this->m_pShellInt);
+							this->m_pPluginInt->ListPlugins();
 						}
 					}
 				}
