@@ -834,6 +834,9 @@ namespace ShellInterface {
 			this->m_pScriptInt->ExecuteCode(L"const CR string <= \"\r\";");
 			this->m_pScriptInt->ExecuteCode(L"const LF string <= \"\n\";");
 
+			//Register constant for shell base path
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_BASE_PATH string <= \"" + this->m_wszBaseDir + L"\";");
+			
 			//Register void variable in order to allow dropping result values
 			this->m_pScriptInt->ExecuteCode(L"global void string;");
 
