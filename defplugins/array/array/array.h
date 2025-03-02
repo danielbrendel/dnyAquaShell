@@ -683,10 +683,10 @@ namespace Array {
 		REG_CMD(L"array_item_get", &oFetchFromDynamicArrayItem, CT_VOID);
 		REG_CMD(L"array_item_set", &oSaveToDynamicArrayItem, CT_VOID);
 		REG_CMD(L"array_item_copy", &oCopyDynamicArrayItem, CT_VOID);
-		REG_CMD(L"resize_array", &oResizeDynamicArray, CT_VOID);
 		REG_CMD(L"array_item_insert", &oInsertItem, CT_VOID);
 		REG_CMD(L"array_item_append", &oAppendItem, CT_VOID);
 		REG_CMD(L"array_item_remove", &oRemoveItem, CT_VOID);
+		REG_CMD(L"array_resize", &oResizeDynamicArray, CT_VOID);
 		REG_CMD(L"free_array", &oRemoveDynamicArray, CT_VOID);
 
 		return true;
