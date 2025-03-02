@@ -429,6 +429,22 @@ public:
 	}
 } g_oSendMouseInputCommandInterface;
 
+class IKeyboardEventInputCommandInterface : public IVoidCommandInterface {
+public:
+	IKeyboardEventInputCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		Automation::KeyboardEvent(pContext->GetPartInt(1), pContext->GetPartInt(2), pContext->GetPartInt(3));
+
+		return true;
+	}
+} g_oKeyboardEventInputCommandInterface;
+
 void Event_KeyboardHook(const std::wstring& wszString, bool bIsDown, bool bWithShift, bool bWithCtrl, bool bWithAlt)
 {
 	/*g_pShellPluginAPI->Fnc_BeginFunctionCall(wszString, CT_VOID);
@@ -604,6 +620,11 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	Automation::Init(pInterfaceData);
 	Timer::Init(pInterfaceData);
 
+	//Register constants
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_KBD_EXTENDEDKEY int <= " + std::to_wstring(KEYEVENTF_EXTENDEDKEY) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_KBD_KEYUP int <= " + std::to_wstring(KEYEVENTF_KEYUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_KBD_UP_AND_EXTENDED int <= " + std::to_wstring(KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP) + L";");
+
 	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_findwindow", &g_oFindWindowCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_iswindow", &g_oIsWindowCommandInterface, CT_BOOL);
@@ -627,6 +648,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_postmessage", &g_oPostMessageCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendkeystrokes", &g_oSendKeyboardInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmousestrokes", &g_oSendMouseInputCommandInterface, CT_BOOL);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_keybdevent", &g_oKeyboardEventInputCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addkeyevent", &g_oAddKeyboardHookCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addmouseevent", &g_oAddMouseHookCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_clpbsetstring", &g_oSetClipboardStringCommandInterface, CT_VOID);
