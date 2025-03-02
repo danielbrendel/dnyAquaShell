@@ -55,6 +55,7 @@ pause;
 
 ## Helper constants and variables
 * DNYAS_IS_INTERACTIVE_MODE: Boolean value that indicates whether or not the current script code runs within the interactive mode
+* DNYAS_BASE_PATH: Contains the base path of the shell
 * CR: Represents a carriage return character
 * LF: Represents a line feed character
 * void: Can be used with commands or functions if you want to dismiss the result value.
