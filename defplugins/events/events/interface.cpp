@@ -27,7 +27,7 @@ public:
 	CEventMgr() {}
 	~CEventMgr() {}
 
-	//Register event
+	//Register event context
 	bool Register(const std::wstring& wszName, const size_t uiArgCount, bool bMultipleHandlers = true)
 	{
 		if (!wszName.length())
@@ -92,6 +92,20 @@ public:
 			
 			g_pShellPluginAPI->Scr_ExecuteCode(wszCode);
 		}
+	}
+
+	//Remove an event context
+	bool Remove(const std::wstring& wszName)
+	{
+		for (size_t i = 0; i < this->m_vEvents.size(); i++) {
+			if (this->m_vEvents[i].wszName == wszName) {
+				this->m_vEvents.erase(this->m_vEvents.begin() + i);
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 } g_oEventMgr;
 
@@ -159,6 +173,21 @@ public:
 
 } g_oRaiseEventCommandInterface;
 
+class IReleaseEventHandlerCommandInterface : public IVoidCommandInterface {
+public:
+	IReleaseEventHandlerCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		return g_oEventMgr.Remove(pContext->GetPartString(1));
+	}
+
+} g_oReleaseEventHandlerCommandInterface;
+
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
 	L"Events",
@@ -191,6 +220,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.add", &g_oAddEventHandlerCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.exists", &g_oEventExistsHandlerCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.raise", &g_oRaiseEventCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"events.release", &g_oReleaseEventHandlerCommandInterface, CT_VOID);
 
 	return true;
 }
@@ -203,6 +233,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.add");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.exists");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.raise");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"events.release");
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)
