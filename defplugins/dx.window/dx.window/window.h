@@ -35,7 +35,7 @@ namespace DxWindow {
 
 		LRESULT KeyEvent(int vKey, bool bDown, bool bCtrlHeld, bool bShiftHeld, bool bAltHeld)
 		{
-			pShellPluginAPI->Scr_ExecuteCode(L"call " + this->m_sEvents.wszWndOnKeyEvent + L"(" + std::to_wstring(vKey) + L", " + (bDown ? L"true" : L"false") + +L", " + (bCtrlHeld ? L"true" : L"false") + L", " + (bShiftHeld ? L"true" : L"false") + L", " + (bAltHeld ? L"true" : L"false") + L") => void;");
+			pShellPluginAPI->Scr_ExecuteCode(L"call " + this->m_sEvents.wszWndOnKeyEvent + L"(" + std::to_wstring(vKey) + L", " + (bDown ? DXSTR_FLAG_TRUE : DXSTR_FLAG_FALSE) + +L", " + (bCtrlHeld ? DXSTR_FLAG_TRUE : DXSTR_FLAG_FALSE) + L", " + (bShiftHeld ? DXSTR_FLAG_TRUE : DXSTR_FLAG_FALSE) + L", " + (bAltHeld ? DXSTR_FLAG_TRUE : DXSTR_FLAG_FALSE) + L") => void;");
 			return 0;
 		}
 
