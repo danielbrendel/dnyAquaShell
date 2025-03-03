@@ -20,3 +20,15 @@
 #define DNY_AS_PRODUCT_LICENCE L"The MIT License"
 
 #define DNY_AS_PRODUCT_VERSION_W MAKEWORD(1, 0)
+
+#if defined(_WIN64)
+	#define PLATFORM_NAME "x64"
+#elif defined(_WIN32)
+	#define PLATFORM_NAME "x86"
+#endif
+
+#if defined(_DEBUG)
+	#define BUILD_TYPE "Debug"
+#elif defined(NDEBUG)
+	#define BUILD_TYPE "Release"
+#endif

@@ -862,6 +862,14 @@ namespace ShellInterface {
 				return false;
 			}
 
+			//Register constants for shell version
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_SHELL_VERSION string <= \"" DNY_AS_PRODUCT_VERSION L"\";");
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_SHELL_VERNUM int <= " + std::to_wstring(DNY_AS_PRODUCT_VERSION_W) + L";");
+
+			//Register constants for platform and build info
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_PLATFORM_NAME string <= \"" PLATFORM_NAME L"\";");
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_BUILD_TYPE string <= \"" BUILD_TYPE L"\";");
+
 			//Register interactive-mode indicator constant
 			std::wstring wszConstStrVal = ((this->m_bInteractiveMode) ? L"true" : L"false");
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_IS_INTERACTIVE_MODE bool <= " + wszConstStrVal + L";");
@@ -870,8 +878,10 @@ namespace ShellInterface {
 			this->m_pScriptInt->ExecuteCode(L"const CR string <= \"\r\";");
 			this->m_pScriptInt->ExecuteCode(L"const LF string <= \"\n\";");
 
-			//Register constant for shell base path
+			//Register constants for various folders
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_BASE_PATH string <= \"" + this->m_wszBaseDir + L"\";");
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_PLUGIN_PATH string <= \"" + this->m_wszBaseDir + L"plugins" + L"\";");
+			this->m_pScriptInt->ExecuteCode(L"const DNYAS_DEFSCRIPTS_PATH string <= \"" + this->m_wszBaseDir + L"scripts" + L"\";");
 			
 			//Register void variable in order to allow dropping result values
 			this->m_pScriptInt->ExecuteCode(L"global void string;");
