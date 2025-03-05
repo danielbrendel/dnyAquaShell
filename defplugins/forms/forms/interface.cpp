@@ -1341,6 +1341,23 @@ public:
 
 } g_oProcessFormsCommand;
 
+class IGetCurrentFocusCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	IGetCurrentFocusCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		this->SetResult((dnyInteger)GetFocus());
+
+		return true;
+	}
+
+} g_oGetCurrentFocusCommand;
+
 class IFreeFormCommandInterface : public IVoidCommandInterface {
 public:
 	IFreeFormCommandInterface() {}
@@ -1471,6 +1488,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_getimageboximage", &g_oGetImageCommandInterface, CT_STRING);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_isformvalid", &g_oFormValidCommand, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_process", &g_oProcessFormsCommand, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_getcurrentfocus", &g_oGetCurrentFocusCommand, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_freeform", &g_oFreeFormCommand, CT_VOID);
 
 	ACTCTX actCtx = { 0 };
@@ -1554,6 +1572,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_getimageboximage");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_isformvalid");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_process");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_getcurrentfocus");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_freeform");
 }
 
