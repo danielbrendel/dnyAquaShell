@@ -81,6 +81,7 @@ pause;
 * fmtdatetime (format string) (opt:timestamp) (result var) # Creates a formatted datetime string and stores it into the result var
 * getsystemerror (result var) # Stores the last system error code of the shell process context into the result var
 * setsystemerror (code) # Sets the last system error code of the shell process context
+* hideconsole # Hides the console window for the rest of the execution. Should only be used in scripts that don't need a console window
 
 ## Multiline support:
 * \< # Opens the editor in multiline mode

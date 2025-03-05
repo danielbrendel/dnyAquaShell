@@ -178,6 +178,11 @@ namespace ShellInterface {
 		return bResult;
 	}
 
+	BOOL DetachConsole(void)
+	{
+		return FreeConsole();
+	}
+
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType);
 
 	class CExtendedScriptingInterface : public dnyScriptInterpreter::CScriptingInterface {
@@ -840,6 +845,23 @@ namespace ShellInterface {
 
 		} g_oSetSystemErrorCommandInterface;
 
+		class IHideConsoleCommandInterface : dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
+		public:
+			IHideConsoleCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				DetachConsole();
+
+				return true;
+			}
+
+		} g_oHideConsoleCommandInterface;
+
 		bool Initialize(int argc, wchar_t* argv[])
 		{
 			//Initialize shell interface
@@ -949,6 +971,7 @@ namespace ShellInterface {
 			SI_ADD_COMMAND(L"fmtdatetime", &g_oFormatDateTimeCommandInterface, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"getsystemerror", &g_oGetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"setsystemerror", &g_oSetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"hideconsole", &g_oHideConsoleCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"cwd", &m_oChangeWorkingDirCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"gwd", &m_oGetWorkingDirCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"require", &m_oRequireCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
@@ -1063,6 +1086,7 @@ namespace ShellInterface {
 			this->m_pScriptInt->UnregisterCommand(L"fmtdatetime");
 			this->m_pScriptInt->UnregisterCommand(L"getsystemerror");
 			this->m_pScriptInt->UnregisterCommand(L"setsystemerror");
+			this->m_pScriptInt->UnregisterCommand(L"hideconsole");
 			this->m_pScriptInt->UnregisterCommand(L"cwd");
 			this->m_pScriptInt->UnregisterCommand(L"gwd");
 			this->m_pScriptInt->UnregisterCommand(L"require");
