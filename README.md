@@ -139,11 +139,54 @@ A plugin needs to export the functions `dnyAS_PluginLoad` and `dnyAS_PluginUnloa
 bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, plugininfo_s* pPluginInfos);
 void dnyAS_PluginUnload(void);
 ```
-The first one is called when the plugin gets loaded. There you must implement all loading stuff. The function recieves the current shell interface version, a pointer to the plugin API class instance and a pointer to a plugin information structure where the plugin should save its information strings. If everything goes well then the plugin must return true, otherwise false.
-
-Here is an example of a plugin info struct object.
+The `dnyAS_PluginLoad` function is called when the plugin gets loaded. The function recieves the current shell interface version, a pointer to the plugin API class instance and a pointer to a plugin information structure where the plugin stores its information data. The function must return true on success, otherwise it must return false.
 
 ```cpp
+IShellPluginAPI* g_pShellPluginAPI;
+
+//Example void-command interface
+class IExampleVoidCommandInterface : public IVoidCommandInterface {
+public:
+	IExampleVoidCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		//Replace all possible variables with their expressions that are used in the command context
+		pCodeContext->ReplaceAllVariables(pInterfaceObject);
+
+		//Print the first string-argument of the command
+		std::wcout << pContext->GetPartString(1) << std::endl;
+
+		//Return true to indicate that the command executed successfully.
+		//Returning false will cause the shell to stop script execution and show an error
+		return true;
+	}
+
+} g_oExampleVoidCommand;
+
+//Example result-type-command interface
+class IExampleResultCommandInterface : public IResultCommandInterface<dnyFloat> {
+public:
+	IExampleResultCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		//Replace all possible variables with their expressions that are used in the command context
+		pCodeContext->ReplaceAllVariables(pInterfaceObject);
+
+		//Access the first float-argument, multiplicate it by two, and then store it into the passed result variable of type float
+		IResultCommandInterface<dnyFloat>::SetResult(pContext->GetPartFloat(1) * 2);
+
+		//Return true to indicate that the command executed successfully.
+		//Returning false will cause the shell to stop script execution and show an error
+		return true;
+	}
+} g_oExampleResultCommand;
+
 plugininfo_s g_sPluginInfos = {
 	L"Plugin name",
 	L"1.0",
@@ -151,16 +194,58 @@ plugininfo_s g_sPluginInfos = {
 	L"Contact info",
 	L"Plugin description"
 };
+
+bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, plugininfo_s* pPluginInfos)
+{
+	//Called when plugin gets loaded
+
+	if ((!pInterfaceData) || (!pPluginInfos))
+		return false;
+
+	//Check version
+	if (version != DNY_AS_PRODUCT_VERSION_W) {
+		return false;
+	}
+
+	//Store interface pointer
+	g_pShellPluginAPI = pInterfaceData;
+
+	//Store plugin infos
+	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
+
+	//Register example commands
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"mycommand", &g_oExampleVoidCommand, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"mycommand2", &g_oExampleResultCommand, CT_FLOAT);
+
+	return true;
+}
 ```
 
-The latter one is called when the plugin gets unloaded. There you can implement all cleanup stuff. 
+When the plugin is available, the example commands would be used as follows:
+
+```
+# Example of using mycommand
+mycommand "This will be printed";
+
+# Example of using mycommand2
+global fResultVar float;
+mycommand2 50 fResultVar; # fResultVar will then contain 100.0
+```
+
+The `dnyAS_PluginUnload` function is called when the plugin gets unloaded. Use it to free all resources, clean up memory, etc.
+
+```cpp
+void dnyAS_PluginUnload(void)
+{
+	//Called when plugin gets unloaded
+
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"mycommand");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"mycommand2");
+}
+```
 
 Please refer to the demo plugin sourcecode in order to view a full documented example.
 
 ## Interpreter
 This software is using dnyScriptInterpreter v1.0 developed by Daniel Brendel.
 Please refer to the script interpreter [readme](interpreter/README.md) for more details.
-
-## Changelog:
-* Version 1.0:
-	* (Initial release)
