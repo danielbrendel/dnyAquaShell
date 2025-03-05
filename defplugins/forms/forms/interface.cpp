@@ -18,7 +18,7 @@ public:
 
 		pContext->ReplaceAllVariables(pInterfaceObject);
 
-		dnyWinForms::HFORM hForm = dnyWinForms::SpawnForm(pContext->GetPartString(1), pContext->GetPartString(2), (int)pContext->GetPartInt(3), (int)pContext->GetPartInt(4), (int)pContext->GetPartInt(5), (int)pContext->GetPartInt(6), WS_MINIMIZEBOX);
+		dnyWinForms::HFORM hForm = dnyWinForms::SpawnForm(pContext->GetPartString(1), pContext->GetPartString(2), (int)pContext->GetPartInt(3), (int)pContext->GetPartInt(4), (int)pContext->GetPartInt(5), (int)pContext->GetPartInt(6), pContext->GetPartInt(7));
 
 		IResultCommandInterface<dnyInteger>::SetResult(hForm);
 
@@ -26,6 +26,25 @@ public:
 	}
 
 } g_oSpawnFormCommand;
+
+class ISetFormIconCommandInterface : public IVoidCommandInterface {
+public:
+	ISetFormIconCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		return pForm->SetIcon(pContext->GetPartString(2));
+	}
+
+} g_oSetFormIconCommandInterface;
 
 class ISetFormPosCommandInterface : public IVoidCommandInterface {
 public:
@@ -83,6 +102,29 @@ public:
 	}
 
 } g_oSetFormTitleCommandInterface;
+
+class ISetFormStyleCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	ISetFormStyleCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		dnyInteger iOldStyle = (dnyInteger)pForm->SetStyle(pContext->GetPartInt(2));
+
+		this->SetResult(iOldStyle);
+
+		return true;
+	}
+
+} g_oSetFormStyleCommandInterface;
 
 class ISetCompPosCommandInterface : public IVoidCommandInterface {
 public:
@@ -1341,11 +1383,42 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
+	//Register constants
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_BORDER int <= " + std::to_wstring(WS_BORDER) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CAPTION int <= " + std::to_wstring(WS_CAPTION) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CHILD int <= " + std::to_wstring(WS_CHILD) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CHILDWINDOW int <= " + std::to_wstring(WS_CHILDWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CLIPCHILDREN int <= " + std::to_wstring(WS_CLIPCHILDREN) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CLIPSIBLINGS int <= " + std::to_wstring(WS_CLIPSIBLINGS) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_DISABLED int <= " + std::to_wstring(WS_DISABLED) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_DLGFRAME int <= " + std::to_wstring(WS_DLGFRAME) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_GROUP int <= " + std::to_wstring(WS_GROUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_HSCROLL int <= " + std::to_wstring(WS_HSCROLL) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_ICONIC int <= " + std::to_wstring(WS_ICONIC) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MAXIMIZE int <= " + std::to_wstring(WS_MAXIMIZE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MAXIMIZEBOX int <= " + std::to_wstring(WS_MAXIMIZEBOX) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MINIMIZE int <= " + std::to_wstring(WS_MINIMIZE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MINIMIZEBOX int <= " + std::to_wstring(WS_MINIMIZEBOX) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_OVERLAPPED int <= " + std::to_wstring(WS_OVERLAPPED) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_OVERLAPPEDWINDOW int <= " + std::to_wstring(WS_OVERLAPPEDWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_POPUP int <= " + std::to_wstring(WS_POPUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_POPUPWINDOW int <= " + std::to_wstring(WS_POPUPWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_SIZEBOX int <= " + std::to_wstring(WS_SIZEBOX) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_SYSMENU int <= " + std::to_wstring(WS_SYSMENU) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_TABSTOP int <= " + std::to_wstring(WS_TABSTOP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_THICKFRAME int <= " + std::to_wstring(WS_THICKFRAME) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_TILED int <= " + std::to_wstring(WS_TILED) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_TILEDWINDOW int <= " + std::to_wstring(WS_TILEDWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_VISIBLE int <= " + std::to_wstring(WS_VISIBLE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_VSCROLL int <= " + std::to_wstring(WS_VSCROLL) + L";");
+
 	//Register example commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawnform", &g_oSpawnFormCommand, CT_INT);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformicon", &g_oSetFormIconCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformpos", &g_oSetFormPosCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformres", &g_oSetFormResCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformtitle", &g_oSetFormTitleCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformstyle", &g_oSetFormStyleCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcomppos", &g_oSetCompPosCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcompres", &g_oSetCompResCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcomptext", &g_oSetCompTextCommandInterface, CT_VOID);
@@ -1424,9 +1497,11 @@ void dnyAS_PluginUnload(void)
 	}
 
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnform");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformicon");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformpos");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformres");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformtitle");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformstyle");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcomppos");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcompres");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcomptext");

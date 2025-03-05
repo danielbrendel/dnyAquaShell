@@ -405,10 +405,10 @@ namespace dnyWinForms {
 		bool m_bSignalRelease;
 	public:
 		CForm() : m_hWindow(0), m_bSignalRelease(false) {}
-		CForm(const std::wstring& wszName, const std::wstring& wszWindowText, int x, int y, int iWidth, int iHeight, DWORD dwStyle) : m_bSignalRelease(false) { this->Instantiate(wszName, wszWindowText, x, y, iWidth, iHeight, dwStyle); }
+		CForm(const std::wstring& wszName, const std::wstring& wszWindowText, int x, int y, int iWidth, int iHeight, LONG_PTR lStyle) : m_bSignalRelease(false) { this->Instantiate(wszName, wszWindowText, x, y, iWidth, iHeight, lStyle); }
 		~CForm() { this->Free(); }
 
-		bool Instantiate(const std::wstring& wszName, const std::wstring& wszWindowText, int x, int y, int iWidth, int iHeight, DWORD dwStyle)
+		bool Instantiate(const std::wstring& wszName, const std::wstring& wszWindowText, int x, int y, int iWidth, int iHeight, LONG_PTR lStyle)
 		{
 			//Instantiate the form
 
@@ -430,9 +430,9 @@ namespace dnyWinForms {
 			this->m_hClass = RegisterClassEx(&sWndClass);
 			if (!this->m_hClass)
 				return false;
-
+			
 			//Register window
-			this->m_hWindow = CreateWindowEx(0, this->m_wszClassName.c_str(), wszWindowText.c_str(), WS_OVERLAPPED | WS_SYSMENU  | WS_VISIBLE | dwStyle, x, y, iWidth, iHeight, 0, 0, (HINSTANCE)GetCurrentProcess(), NULL);
+			this->m_hWindow = CreateWindowEx(0, this->m_wszClassName.c_str(), wszWindowText.c_str(), lStyle, x, y, iWidth, iHeight, 0, 0, (HINSTANCE)GetCurrentProcess(), NULL);
 			if (!this->m_hWindow) {
 				UnregisterClass(this->m_wszClassName.c_str(), (HINSTANCE)GetCurrentProcess());
 				return false;
@@ -455,6 +455,18 @@ namespace dnyWinForms {
 		}
 
 		//Setters
+		bool SetIcon(const std::wstring& wszIcon)
+		{
+			HANDLE hIcon = LoadImage(0, wszIcon.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+			if (hIcon) {
+				SendMessage(this->m_hWindow, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+				SendMessage(this->m_hWindow, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+
+				return true;
+			}
+
+			return false;
+		}
 		bool SetPosition(int x, int y)
 		{
 			//Update window position
@@ -484,6 +496,10 @@ namespace dnyWinForms {
 			}
 
 			return false;
+		}
+		LONG_PTR SetStyle(LONG_PTR lStyle)
+		{
+			return SetWindowLongPtr(this->m_hWindow, GWL_STYLE, lStyle);
 		}
 		bool SetText(const std::wstring& wszText)
 		{
@@ -1586,7 +1602,7 @@ namespace dnyWinForms {
 		CFormMgr() { pFormMgrInstance = this; }
 		~CFormMgr() {}
 
-		HFORM CreateForm(const SFORMNAME& wszName, const std::wstring& wszWindowText, int x, int y, int iWidth, int iHeight, DWORD dwStyle)
+		HFORM CreateForm(const SFORMNAME& wszName, const std::wstring& wszWindowText, int x, int y, int iWidth, int iHeight, LONG_PTR lStyle)
 		{
 			//Create new form
 
@@ -1595,7 +1611,7 @@ namespace dnyWinForms {
 				return INVALID_FORM_HANDLE;
 
 			//Instantiate form
-			CForm* pForm = new CForm(wszName, wszWindowText, x, y, iWidth, iHeight, dwStyle);
+			CForm* pForm = new CForm(wszName, wszWindowText, x, y, iWidth, iHeight, lStyle);
 			if ((!pForm) || (!pForm->IsReady()))
 				return INVALID_FORM_HANDLE;
 
