@@ -763,6 +763,51 @@ namespace ShellInterface {
 
 		} g_oGetTickCountCommandInterface;
 
+		class ITimeStampCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
+		public:
+			ITimeStampCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				std::time_t tm = std::time(nullptr);
+
+				IResultCommandInterface<dnyScriptInterpreter::dnyInteger>::SetResult(tm);
+
+				return true;
+			}
+		} g_oTimeStampCommandInterface;
+
+		class IFormatDateTimeCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyString> {
+		public:
+			IFormatDateTimeCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				wchar_t wcsDate[MAX_PATH];
+
+				std::wstring wszFormat = pContext->GetPartString(1);
+				std::time_t t = std::time(nullptr);
+
+				if (pContext->GetPartCount() >= 4) {
+					t = pContext->GetPartInt(2);
+				}
+
+				std::wcsftime(wcsDate, sizeof(wcsDate), wszFormat.c_str(), std::localtime(&t));
+
+				IResultCommandInterface<dnyScriptInterpreter::dnyString>::SetResult(wcsDate);
+
+				return true;
+			}
+		} g_oFormatDateTimeCommandInterface;
+
 		class IGetSystemErrorCommandInterface : public dnyScriptInterpreter::CCommandManager::IResultCommandInterface<dnyScriptInterpreter::dnyInteger> {
 		public:
 			IGetSystemErrorCommandInterface() {}
@@ -895,6 +940,8 @@ namespace ShellInterface {
 			SI_ADD_COMMAND(L"sleep", &g_oSleepCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"bitop", &g_oBitOpCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"gettickcount", &g_oGetTickCountCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
+			SI_ADD_COMMAND(L"timestamp", &g_oTimeStampCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
+			SI_ADD_COMMAND(L"fmtdatetime", &g_oFormatDateTimeCommandInterface, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"getsystemerror", &g_oGetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"setsystemerror", &g_oSetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"cwd", &m_oChangeWorkingDirCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
@@ -1007,6 +1054,8 @@ namespace ShellInterface {
 			this->m_pScriptInt->UnregisterCommand(L"sleep");
 			this->m_pScriptInt->UnregisterCommand(L"bitop");
 			this->m_pScriptInt->UnregisterCommand(L"gettickcount");
+			this->m_pScriptInt->UnregisterCommand(L"timestamp");
+			this->m_pScriptInt->UnregisterCommand(L"fmtdatetime");
 			this->m_pScriptInt->UnregisterCommand(L"getsystemerror");
 			this->m_pScriptInt->UnregisterCommand(L"setsystemerror");
 			this->m_pScriptInt->UnregisterCommand(L"cwd");

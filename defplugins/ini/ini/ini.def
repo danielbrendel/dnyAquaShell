@@ -1,4 +1,4 @@
-LIBRARY datetime
+LIBRARY ini
 EXPORTS
 	DllMain @ 1
 	dnyAS_PluginLoad @ 2

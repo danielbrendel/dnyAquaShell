@@ -74,6 +74,8 @@ pause;
 * sleep (milliseconds) # Pauses the main thread for N milliseconds
 * bitop (operation) (array of operands) (result var) # Performs either a bitwise OR, AND or XOR operation and stores it to the result var
 * gettickcount (result var) # Stores the number  of milliseconds that have elapsed since system start into the result var
+* timestamp (result var) # Stores the current system timestamp into the result var
+* fmtdatetime (format string) (opt:timestamp) (result var) # Creates a formatted datetime string and stores it into the result var
 * getsystemerror (result var) # Stores the last system error code of the shell process context into the result var
 * setsystemerror (code) # Sets the last system error code of the shell process context
 
