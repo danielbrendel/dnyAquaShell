@@ -1,4 +1,4 @@
-#dnyScriptInterpreter demo script file
+# Demo script file
 
 global boolvar bool;
 global intvar int;
@@ -13,7 +13,7 @@ set floatvar <= 0.5;
 set stringvar <= "Hi there";
 set stringvar2 <= "%stringvar";
 
-print "%stringvar %stringvar2";#Comments can be put alone in a single line or at the end of the line
+print "%stringvar %stringvar2"; #Comments can be put alone in a single line or at the end of the line
 
 if(%stringvar, -eq, "Hi there2")
 {
