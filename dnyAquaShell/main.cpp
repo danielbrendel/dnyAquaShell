@@ -185,7 +185,6 @@ namespace ShellInterface {
 		int argc;
 	};
 	std::vector<thread_func_s*> vThreadFuncs;
-	HANDLE hThreadFuncHandler;
 	DWORD WINAPI ThreadFuncHandler(LPVOID lpvReserved);
 	bool AddThreadFunc(const std::wstring& wszName, std::vector<std::wstring> args)
 	{

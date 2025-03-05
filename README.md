@@ -72,6 +72,7 @@ pause;
 ## Helper commands:
 * getscriptpath (result) # Stores the full path of the current executed script in the result var
 * getscriptname (result) # Stores the full file name of the current executed script in the result var
+* debug (text content) # Prints a system debug message
 * textview (file) # Prints the text contents of the file to the standard output
 * random (start) (end) (result var) # Generates a random number within the range and stores it to the result var
 * sleep (milliseconds) # Pauses the main thread for N milliseconds
