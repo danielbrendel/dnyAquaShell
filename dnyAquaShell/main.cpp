@@ -178,6 +178,57 @@ namespace ShellInterface {
 		return bResult;
 	}
 
+	struct thread_func_s {
+		wchar_t* pwszFuncName;
+		HANDLE hThread;
+		wchar_t** argv;
+		int argc;
+	};
+	std::vector<thread_func_s*> vThreadFuncs;
+	HANDLE hThreadFuncHandler;
+	DWORD WINAPI ThreadFuncHandler(LPVOID lpvReserved);
+	bool AddThreadFunc(const std::wstring& wszName, std::vector<std::wstring> args)
+	{
+		thread_func_s* pThreadFunc = new thread_func_s;
+
+		pThreadFunc->pwszFuncName = new wchar_t[DNY_MAX_LINE_BUFFER_SIZE];
+		memset(pThreadFunc->pwszFuncName, 0x00, DNY_MAX_LINE_BUFFER_SIZE);
+		wcscpy(pThreadFunc->pwszFuncName, wszName.c_str());
+
+		pThreadFunc->argc = (int)args.size();
+		pThreadFunc->argv = new wchar_t*[pThreadFunc->argc];
+		for (size_t i = 0; i < args.size(); i++) {
+			pThreadFunc->argv[i] = new wchar_t[DNY_MAX_LINE_BUFFER_SIZE];
+			memset(pThreadFunc->argv[i], 0x00, DNY_MAX_LINE_BUFFER_SIZE);
+			wcscpy(pThreadFunc->argv[i], args[i].c_str());
+		}
+
+		pThreadFunc->hThread = CreateThread(NULL, 0, &ThreadFuncHandler, (LPVOID)pThreadFunc, 0, NULL);
+		if (pThreadFunc->hThread == INVALID_HANDLE_VALUE) {
+			return false;
+		}
+
+		vThreadFuncs.push_back(pThreadFunc);
+
+		return true;
+	}
+	void FreeThreadFuncs(void)
+	{
+		for (size_t i = 0; i < vThreadFuncs.size(); i++) {
+			for (size_t j = 0; j < vThreadFuncs[i]->argc; j++) {
+				delete[] vThreadFuncs[i]->argv[j];
+			}
+
+			delete[] vThreadFuncs[i]->argv;
+			delete[] vThreadFuncs[i]->pwszFuncName;
+			CloseHandle(vThreadFuncs[i]->hThread);
+
+			delete vThreadFuncs[i];
+		}
+
+		vThreadFuncs.clear();
+	}
+
 	BOOL DetachConsole(void)
 	{
 		return FreeConsole();
@@ -845,6 +896,24 @@ namespace ShellInterface {
 
 		} g_oSetSystemErrorCommandInterface;
 
+		class IAddThreadFuncCommandInterface : public dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
+		public:
+			IAddThreadFuncCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				std::wstring wszFuncName = pContext->GetPartString(1);
+				std::vector<std::wstring> vArgs = pContext->GetPartArray(2);
+
+				return AddThreadFunc(wszFuncName, vArgs);
+			}
+
+		} g_oAddThreadFuncCommandInterface;
+
 		class IHideConsoleCommandInterface : dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			IHideConsoleCommandInterface() {}
@@ -971,6 +1040,7 @@ namespace ShellInterface {
 			SI_ADD_COMMAND(L"fmtdatetime", &g_oFormatDateTimeCommandInterface, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"getsystemerror", &g_oGetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"setsystemerror", &g_oSetSystemErrorCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
+			SI_ADD_COMMAND(L"threadfunc", &g_oAddThreadFuncCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"hideconsole", &g_oHideConsoleCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"cwd", &m_oChangeWorkingDirCommand, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"gwd", &m_oGetWorkingDirCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
@@ -1074,6 +1144,9 @@ namespace ShellInterface {
 				SetConsoleCtrlHandler(&SI_ConsoleCtrHandler, FALSE);
 			}
 
+			//Free threaded function data
+			FreeThreadFuncs();
+
 			//Unregister commands
 			this->m_pScriptInt->UnregisterCommand(L"getscriptpath");
 			this->m_pScriptInt->UnregisterCommand(L"getscriptname");
@@ -1086,6 +1159,7 @@ namespace ShellInterface {
 			this->m_pScriptInt->UnregisterCommand(L"fmtdatetime");
 			this->m_pScriptInt->UnregisterCommand(L"getsystemerror");
 			this->m_pScriptInt->UnregisterCommand(L"setsystemerror");
+			this->m_pScriptInt->UnregisterCommand(L"threadfunc");
 			this->m_pScriptInt->UnregisterCommand(L"hideconsole");
 			this->m_pScriptInt->UnregisterCommand(L"cwd");
 			this->m_pScriptInt->UnregisterCommand(L"gwd");
@@ -1181,6 +1255,8 @@ namespace ShellInterface {
 		void ShutdownShell(void) { this->m_bShallRun = false; }
 
 		const bool IsInInteractiveMode(void) const { return this->m_bInteractiveMode; }
+
+		friend DWORD WINAPI ThreadFuncHandler(LPVOID lpvReserved);
 	};
 
 	BOOL WINAPI SI_ConsoleCtrHandler(DWORD dwCtrlType)
@@ -1204,6 +1280,27 @@ namespace ShellInterface {
 		}
 
 		return FALSE;
+	}
+
+	DWORD WINAPI ThreadFuncHandler(LPVOID lpvReserved)
+	{
+		thread_func_s* pThreadFunc = (thread_func_s*)lpvReserved;
+
+		std::wstring wszParams = L"";
+
+		if (pThreadFunc->argc > 0) {
+			for (int i = 0; i < pThreadFunc->argc; i++) {
+				wszParams = wszParams + L"\"" + std::wstring(pThreadFunc->argv[i]) + L"\"";
+
+				if (i < pThreadFunc->argc - 1) {
+					wszParams += L", ";
+				}
+			}
+		}
+
+		__pShellInterface__->m_pScriptInt->ExecuteCode(L"call " + std::wstring(pThreadFunc->pwszFuncName) + L"(" + wszParams + L") = > void;");
+
+		return 0;
 	}
 }
 
