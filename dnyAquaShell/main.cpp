@@ -713,6 +713,23 @@ namespace ShellInterface {
 			}
 		} m_oGetWorkingDirCommand;
 
+		class IOutputDebugMsgCommandInterface : dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
+		public:
+			IOutputDebugMsgCommandInterface() {}
+
+			virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+			{
+				dnyScriptInterpreter::ICodeContext* pContext = (dnyScriptInterpreter::ICodeContext*)pCodeContext;
+
+				pContext->ReplaceAllVariables(pInterfaceObject);
+
+				OutputDebugString(pContext->GetPartString(1).c_str());
+
+				return true;
+			}
+
+		} g_oOutputDebugMsgCommandInterface;
+
 		class ITextFilePrinterCommandInterface : dnyScriptInterpreter::CCommandManager::IVoidCommandInterface {
 		public:
 			ITextFilePrinterCommandInterface() {}
@@ -1031,6 +1048,7 @@ namespace ShellInterface {
 			#define SI_ADD_COMMAND(name, obj, type) if (!this->m_pScriptInt->RegisterCommand(name, obj, type)) { this->Free(); return false; }
 			SI_ADD_COMMAND(L"getscriptpath", &m_oCurrentScriptPathCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
 			SI_ADD_COMMAND(L"getscriptname", &m_oCurrentScriptNameCommand, dnyScriptInterpreter::CVarManager::CT_STRING);
+			SI_ADD_COMMAND(L"debug", &g_oOutputDebugMsgCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"textview", &g_oTextFilePrinterCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
 			SI_ADD_COMMAND(L"random", &g_oRandomCommandInterface, dnyScriptInterpreter::CVarManager::CT_INT);
 			SI_ADD_COMMAND(L"sleep", &g_oSleepCommandInterface, dnyScriptInterpreter::CVarManager::CT_VOID);
@@ -1150,6 +1168,7 @@ namespace ShellInterface {
 			//Unregister commands
 			this->m_pScriptInt->UnregisterCommand(L"getscriptpath");
 			this->m_pScriptInt->UnregisterCommand(L"getscriptname");
+			this->m_pScriptInt->UnregisterCommand(L"debug");
 			this->m_pScriptInt->UnregisterCommand(L"textview");
 			this->m_pScriptInt->UnregisterCommand(L"random");
 			this->m_pScriptInt->UnregisterCommand(L"sleep");
