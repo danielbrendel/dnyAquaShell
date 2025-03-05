@@ -6,7 +6,7 @@ plugininfo_s g_sPluginInfos = {
 	L"1.0",
 	L"Daniel Brendel",
 	L"dbrendel1988<at>gmail<dot>com",
-	L"Dynamic and static array provider"
+	L"Provides array functionality"
 };
 
 bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, plugininfo_s* pPluginInfos)

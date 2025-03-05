@@ -64,6 +64,9 @@ pause;
 * DNYAS_DEFSCRIPTS_PATH: Contains the path to the default scripts directory
 * CR: Represents a carriage return character
 * LF: Represents a line feed character
+* TAB: Represents a tab character
+* QUOT_SINGLE: Represents a single quotation character
+* QUOT_DOUBLE: Represents a double quotation character
 * void: Can be used with commands or functions if you want to dismiss the result value.
 
 ## Helper commands:

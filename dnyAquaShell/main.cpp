@@ -919,9 +919,14 @@ namespace ShellInterface {
 			std::wstring wszConstStrVal = ((this->m_bInteractiveMode) ? L"true" : L"false");
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_IS_INTERACTIVE_MODE bool <= " + wszConstStrVal + L";");
 
-			//Register new-line character constants
+			//Register special character constants
 			this->m_pScriptInt->ExecuteCode(L"const CR string <= \"\r\";");
 			this->m_pScriptInt->ExecuteCode(L"const LF string <= \"\n\";");
+			this->m_pScriptInt->ExecuteCode(L"const TAB string <= \"\t\";");
+			dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pQuotSingleConst = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)this->m_pScriptInt->RegisterCVar(L"QUOT_SINGLE", dnyScriptInterpreter::CVarManager::CT_STRING, true, false);
+			if (pQuotSingleConst) pQuotSingleConst->SetValue(L"\'");
+			dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>* pQuotDoubleConst = (dnyScriptInterpreter::CVarManager::ICVar<dnyScriptInterpreter::dnyString>*)this->m_pScriptInt->RegisterCVar(L"QUOT_DOUBLE", dnyScriptInterpreter::CVarManager::CT_STRING, true, false);
+			if (pQuotDoubleConst) pQuotDoubleConst->SetValue(L"\"");
 
 			//Register constants for various folders
 			this->m_pScriptInt->ExecuteCode(L"const DNYAS_BASE_PATH string <= \"" + this->m_wszBaseDir + L"\";");

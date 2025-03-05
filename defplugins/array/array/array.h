@@ -5,7 +5,7 @@
 namespace Array {
 	IShellPluginAPI* pShellPluginAPI;
 
-	class CDynamicArray {
+	class CArray {
 	public:
 		struct dynamic_array_object {
 			std::wstring wszBaseName;
@@ -49,8 +49,8 @@ namespace Array {
 			this->m_vObjects.clear();
 		}
 	public:
-		CDynamicArray() {}
-		~CDynamicArray() { this->Clear(); }
+		CArray() {}
+		~CArray() { this->Clear(); }
 
 		bool RegisterArray(const std::wstring& wszBaseName, const cvartype_e eType, const size_t uiBaseEntries, const std::vector<std::wstring>& vInitalList)
 		{
@@ -572,11 +572,11 @@ namespace Array {
 
 			return true;
 		}
-	} oDynamicArray;
+	} oArray;
 
-	class IRegisterDynamicArray : public IVoidCommandInterface {
+	class IRegisterArray : public IVoidCommandInterface {
 	public:
-		IRegisterDynamicArray() {}
+		IRegisterArray() {}
 
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
@@ -614,14 +614,14 @@ namespace Array {
 				return false;
 			}
 
-			return oDynamicArray.RegisterArray(wszArrayName, eType, iInitialSize, vItemList);
+			return oArray.RegisterArray(wszArrayName, eType, iInitialSize, vItemList);
 		}
 
-	} oRegisterDynamicArray;
+	} oRegisterArray;
 
-	class IFetchFromDynamicArrayItem : public IVoidCommandInterface {
+	class IFetchFromArrayItem : public IVoidCommandInterface {
 	public:
-		IFetchFromDynamicArrayItem() {}
+		IFetchFromArrayItem() {}
 
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
@@ -631,14 +631,14 @@ namespace Array {
 
 			cvarptr_t pTargetVar = pShellPluginAPI->Cv_FindCVar(pCodeContext->GetPartString(3));
 
-			return oDynamicArray.StoreArrayItemValueToTarget(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2), pTargetVar);
+			return oArray.StoreArrayItemValueToTarget(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2), pTargetVar);
 		}
 
-	} oFetchFromDynamicArrayItem;
+	} oFetchFromArrayItem;
 
-	class ISaveToDynamicArrayItem : public IVoidCommandInterface {
+	class ISaveToArrayItem : public IVoidCommandInterface {
 	public:
-		ISaveToDynamicArrayItem() {}
+		ISaveToArrayItem() {}
 
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
@@ -648,14 +648,14 @@ namespace Array {
 
 			cvarptr_t pSourceVar = pShellPluginAPI->Cv_FindCVar(pCodeContext->GetPartString(1));
 
-			return oDynamicArray.SaveToArrayItem(pSourceVar, pCodeContext->GetPartString(2), pCodeContext->GetPartInt(3));
+			return oArray.SaveToArrayItem(pSourceVar, pCodeContext->GetPartString(2), pCodeContext->GetPartInt(3));
 		}
 
-	} oSaveToDynamicArrayItem;
+	} oSaveToArrayItem;
 
-	class ICopyDynamicArrayItem : public IVoidCommandInterface {
+	class ICopyArrayItem : public IVoidCommandInterface {
 	public:
-		ICopyDynamicArrayItem() {}
+		ICopyArrayItem() {}
 
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
@@ -663,14 +663,14 @@ namespace Array {
 
 			pCodeContext->ReplaceAllVariables(pArg2);
 
-			return oDynamicArray.CopyArrayItem(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2), pCodeContext->GetPartString(3), pCodeContext->GetPartInt(4));
+			return oArray.CopyArrayItem(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2), pCodeContext->GetPartString(3), pCodeContext->GetPartInt(4));
 		}
 
-	} oCopyDynamicArrayItem;
+	} oCopyArrayItem;
 
-	class IResizeDynamicArray : public IVoidCommandInterface {
+	class IResizeArray : public IVoidCommandInterface {
 	public:
-		IResizeDynamicArray() {}
+		IResizeArray() {}
 
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
@@ -678,14 +678,14 @@ namespace Array {
 
 			pCodeContext->ReplaceAllVariables(pArg2);
 
-			return oDynamicArray.Resize(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2));
+			return oArray.Resize(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2));
 		}
 
-	} oResizeDynamicArray;
+	} oResizeArray;
 
-	class ICloneDynamicArray : public IVoidCommandInterface {
+	class ICloneArray : public IVoidCommandInterface {
 	public:
-		ICloneDynamicArray() {}
+		ICloneArray() {}
 
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
@@ -693,10 +693,10 @@ namespace Array {
 
 			pCodeContext->ReplaceAllVariables(pArg2);
 
-			return oDynamicArray.Clone(pCodeContext->GetPartString(1), pCodeContext->GetPartString(2));
+			return oArray.Clone(pCodeContext->GetPartString(1), pCodeContext->GetPartString(2));
 		}
 
-	} oCloneDynamicArray;
+	} oCloneArray;
 
 	class IInsertItem : public IVoidCommandInterface {
 	public:
@@ -708,7 +708,7 @@ namespace Array {
 
 			pCodeContext->ReplaceAllVariables(pArg2);
 
-			return oDynamicArray.Insert(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2), pCodeContext->GetPartString(3));
+			return oArray.Insert(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2), pCodeContext->GetPartString(3));
 		}
 
 	} oInsertItem;
@@ -723,7 +723,7 @@ namespace Array {
 
 			pCodeContext->ReplaceAllVariables(pArg2);
 
-			return oDynamicArray.Append(pCodeContext->GetPartString(1), pCodeContext->GetPartString(2));
+			return oArray.Append(pCodeContext->GetPartString(1), pCodeContext->GetPartString(2));
 		}
 
 	} oAppendItem;
@@ -738,23 +738,23 @@ namespace Array {
 
 			pCodeContext->ReplaceAllVariables(pArg2);
 
-			return oDynamicArray.Remove(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2));
+			return oArray.Remove(pCodeContext->GetPartString(1), pCodeContext->GetPartInt(2));
 		}
 
 	} oRemoveItem;
 
-	class IRemoveDynamicArray : public IVoidCommandInterface {
+	class IRemoveArray : public IVoidCommandInterface {
 	public:
-		IRemoveDynamicArray() {}
+		IRemoveArray() {}
 
 		virtual bool CommandCallback(void* pArg1, void* pArg2)
 		{
 			ICodeContext* pCodeContext = (ICodeContext*)pArg1;
 
-			return oDynamicArray.RemoveArray(pCodeContext->GetPartString(1));
+			return oArray.RemoveArray(pCodeContext->GetPartString(1));
 		}
 
-	} oRemoveDynamicArray;
+	} oRemoveArray;
 
 	bool Initialize(IShellPluginAPI* pInstance)
 	{
@@ -768,16 +768,16 @@ namespace Array {
 
 		//Register commands
 		#define REG_CMD(n, ptr, type) if (!pShellPluginAPI->Cmd_RegisterCommand(n, ptr, type)) return false;
-		REG_CMD(L"array", &oRegisterDynamicArray, CT_VOID);
-		REG_CMD(L"array_item_get", &oFetchFromDynamicArrayItem, CT_VOID);
-		REG_CMD(L"array_item_set", &oSaveToDynamicArrayItem, CT_VOID);
-		REG_CMD(L"array_item_copy", &oCopyDynamicArrayItem, CT_VOID);
+		REG_CMD(L"array", &oRegisterArray, CT_VOID);
+		REG_CMD(L"array_item_get", &oFetchFromArrayItem, CT_VOID);
+		REG_CMD(L"array_item_set", &oSaveToArrayItem, CT_VOID);
+		REG_CMD(L"array_item_copy", &oCopyArrayItem, CT_VOID);
 		REG_CMD(L"array_item_insert", &oInsertItem, CT_VOID);
 		REG_CMD(L"array_item_append", &oAppendItem, CT_VOID);
 		REG_CMD(L"array_item_remove", &oRemoveItem, CT_VOID);
-		REG_CMD(L"array_resize", &oResizeDynamicArray, CT_VOID);
-		REG_CMD(L"array_clone", &oCloneDynamicArray, CT_VOID);
-		REG_CMD(L"free_array", &oRemoveDynamicArray, CT_VOID);
+		REG_CMD(L"array_resize", &oResizeArray, CT_VOID);
+		REG_CMD(L"array_clone", &oCloneArray, CT_VOID);
+		REG_CMD(L"array_free", &oRemoveArray, CT_VOID);
 
 		return true;
 	}
@@ -797,7 +797,7 @@ namespace Array {
 		UNREG_CMD(L"array_item_remove");
 		UNREG_CMD(L"array_resize");
 		UNREG_CMD(L"array_clone");
-		UNREG_CMD(L"free_array");
+		UNREG_CMD(L"array_free");
 
 		return true;
 	}
