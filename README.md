@@ -70,8 +70,8 @@ pause;
 * void: Can be used with commands or functions if you want to dismiss the result value.
 
 ## Helper commands:
-* getscriptpath (result) # Stores the full path of the current executed script in the result var
-* getscriptname (result) # Stores the full file name of the current executed script in the result var
+* getscriptpath (result var) # Stores the full path of the current executed script in the result var
+* getscriptname (result var) # Stores the full file name of the current executed script in the result var
 * debug (text content) # Prints a system debug message
 * textview (file) # Prints the text contents of the file to the standard output
 * random (start) (end) (result var) # Generates a random number within the range and stores it to the result var

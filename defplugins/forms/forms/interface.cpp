@@ -220,6 +220,35 @@ public:
 
 } g_oGetCompTextCommandInterface;
 
+class IGetCompHandleCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	IGetCompHandleCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+		
+		if (pContext->GetPartCount() > 3) {
+			dnyWinForms::IBaseComponent* pBaseComp = pForm->FindComponent(pContext->GetPartString(2), pContext->GetPartString(3));
+			if (!pBaseComp)
+				return false;
+
+			IResultCommandInterface<dnyInteger>::SetResult((dnyInteger)pBaseComp->GetHandle());
+		} else {
+			IResultCommandInterface<dnyInteger>::SetResult((dnyInteger)pForm->GetHandle());
+		}
+
+		return true;
+	}
+
+} g_oGetCompHandleCommandInterface;
+
 class ISetCompFontCommandInterface : public IVoidCommandInterface {
 public:
 	ISetCompFontCommandInterface() {}
@@ -242,6 +271,33 @@ public:
 	}
 
 } g_oSetCompFontCommandInterface;
+
+class ISetCompStyleCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	ISetCompStyleCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+		
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+		
+		dnyWinForms::IBaseComponent* pBaseComp = pForm->FindComponent(pContext->GetPartString(2), pContext->GetPartString(3));
+		if (!pBaseComp)
+			return false;
+		
+		dnyInteger iOldStyle = (dnyInteger)pBaseComp->SetStyle(pContext->GetPartInt(4), true);
+
+		this->SetResult(iOldStyle);
+
+		return true;
+	}
+
+} g_oSetCompStyleCommandInterface;
 
 class IStartCompGroupCommandInterface : public IVoidCommandInterface {
 public:
@@ -374,6 +430,31 @@ public:
 
 } g_oSpawnTextboxCommandInterface;
 
+class ISetTextboxMultilineCommandInterface : public IVoidCommandInterface {
+public:
+	ISetTextboxMultilineCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		dnyWinForms::CTextbox* pTextbox = (dnyWinForms::CTextbox*)pForm->FindComponent(L"CTextbox", pContext->GetPartString(2));
+		if (!pTextbox)
+			return false;
+
+		pTextbox->SetMultiline();
+
+		return true;
+	}
+
+} g_oSetTextboxMultilineCommandInterface;
+
 class IGetTextboxTextCommandInterface : public IResultCommandInterface<dnyString> {
 public:
 	IGetTextboxTextCommandInterface() {}
@@ -421,6 +502,29 @@ public:
 	}
 
 } g_oSetTextboxTextCommandInterface;
+
+class IAppendTextboxTextCommandInterface : public IVoidCommandInterface {
+public:
+	IAppendTextboxTextCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		dnyWinForms::CTextbox* pTextbox = (dnyWinForms::CTextbox*)pForm->FindComponent(L"CTextbox", pContext->GetPartString(2));
+		if (!pTextbox)
+			return false;
+
+		return pTextbox->AppendText(pContext->GetPartString(3));
+	}
+
+} g_oAppendTextboxTextCommandInterface;
 
 class ISpawnCheckboxCommandInterface : public IVoidCommandInterface {
 public:
@@ -1441,14 +1545,18 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcomptext", &g_oSetCompTextCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcompfont", &g_oSetCompFontCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_getcomptext", &g_oGetCompTextCommandInterface, CT_STRING);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_getcomphandle", &g_oGetCompHandleCommandInterface, CT_INT);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcompstyle", &g_oSetCompStyleCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_startcompgroup", &g_oStartCompGroupCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcompgroup", &g_oSetCompGroupCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_clearcompgroup", &g_oClearCompGroupCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawnlabel", &g_oSpawnLabelCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawnbutton", &g_oSpawnButtonCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawntextbox", &g_oSpawnTextboxCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_settextboxmultiline", &g_oSetTextboxMultilineCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_gettextboxtext", &g_oGetTextboxTextCommandInterface, CT_STRING);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_settextboxtext", &g_oSetTextboxTextCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_appendtextboxtext", &g_oAppendTextboxTextCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawncheckbox", &g_oSpawnCheckboxCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_cbischecked", &g_oCbGetValueCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_cbsetvalue", &g_oCbSetValueCommandInterface, CT_VOID);
@@ -1525,14 +1633,18 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcomptext");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcompfont");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_getcomptext");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_getcomphandle");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcompstyle");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_startcompgroup");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcompgroup");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_clearcompgroup");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnlabel");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnbutton");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawntextbox");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_settextboxmultiline");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_gettextboxtext");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_settextboxtext");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_appendtextboxtext");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawncheckbox");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_cbischecked");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_cbsetvalue");

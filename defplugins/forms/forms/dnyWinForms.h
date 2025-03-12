@@ -354,6 +354,16 @@ namespace dnyWinForms {
 
 			return false;
 		}
+		virtual LONG_PTR SetStyle(LONG_PTR lStyle, bool refresh = false)
+		{
+			LONG_PTR result = SetWindowLongPtr(this->GetHandle(), GWL_STYLE, lStyle);
+			
+			if (refresh) {
+				SetWindowPos(this->GetHandle(), NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+			}
+
+			return result;
+		}
 		virtual bool StartGroup()
 		{
 			//Set component group
@@ -819,6 +829,8 @@ namespace dnyWinForms {
 	};
 	
 	class CTextbox : public IBaseComponent {
+	private:
+		bool m_bMultiLine;
 	public:
 		CTextbox() {}
 		CTextbox(HWND hParentWnd, const std::wstring& wszName, const WFDimension& dimPosition, const WFDimension& dimResolution) { this->Instantiate(hParentWnd, wszName, dimPosition, dimResolution); }
@@ -838,6 +850,9 @@ namespace dnyWinForms {
 			//Create textbox control
 			this->m_hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"Edit", NULL, WS_CHILD | WS_VISIBLE | ES_MULTILINE, dimPosition[0], dimPosition[1], dimResolution[0], dimResolution[1], this->GetParent(), (HMENU)this->m_usMenuId, (HINSTANCE)GetCurrentProcess(), NULL);
 			
+			//Set initially to false
+			this->m_bMultiLine = false;
+
 			return this->m_hWindow != NULL;
 		}
 
@@ -849,6 +864,19 @@ namespace dnyWinForms {
 				return false;
 
 			return IBaseComponent::SetText(wszText);
+		}
+
+		virtual bool AppendText(const std::wstring& wszText)
+		{
+			//Append control text
+
+			if (!this->SetText(this->GetText() + L"\r\n" + wszText))
+				return false;
+
+			if (!SendMessage(this->m_hWindow, EM_LINESCROLL, 0, INT_MAX))
+				return false;
+
+			return true;
 		}
 
 		virtual std::wstring GetText(void)
@@ -875,6 +903,19 @@ namespace dnyWinForms {
 			delete[] pWndText;
 
 			return wszResult;
+		}
+
+		virtual void SetMultiline(void)
+		{
+			//Set textbox to multiline
+
+			this->m_bMultiLine = true;
+
+			SetWindowLongPtr(this->GetHandle(), GWL_STYLE, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL);
+
+			SendMessage(this->GetHandle(), EM_SETLIMITTEXT, 0, 0);
+
+			SetWindowPos(this->GetHandle(), NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 		}
 
 		//Handlers
