@@ -397,6 +397,22 @@ public:
 	}
 } g_oPostMessageCommandInterface;
 
+class IGetWindowLongCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	IGetWindowLongCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		IResultCommandInterface<dnyInteger>::SetResult(Automation::GetWindowLong((HWND)pContext->GetPartInt(1), pContext->GetPartInt(2)));
+
+		return true;
+	}
+} g_oGetWindowLongCommandInterface;
+
 class ISendKeyboardInputCommandInterface : public IResultCommandInterface<dnyBoolean> {
 public:
 	ISendKeyboardInputCommandInterface() {}
@@ -675,6 +691,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_enumchildwindows", &g_oEnumChildWindowsCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmessage", &g_oSendMessageCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_postmessage", &g_oPostMessageCommandInterface, CT_BOOL);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_getwindowlong", &g_oGetWindowLongCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendkeystrokes", &g_oSendKeyboardInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmousestrokes", &g_oSendMouseInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_keybdevent", &g_oKeyboardEventInputCommandInterface, CT_VOID);
@@ -718,6 +735,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_enumchildwindows");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmessage");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_postmessage");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_getwindowlong");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendkeystrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmousestrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_keybdevent");
