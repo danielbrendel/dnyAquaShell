@@ -124,8 +124,22 @@ namespace ShellInterface {
 		//Get full shell path
 
 		wchar_t wszFullPath[1024] = { 0 };
+		size_t uiLastChar = std::string::npos;
 
 		GetModuleFileName(0, wszFullPath, sizeof(wszFullPath));
+
+		for (size_t i = wcslen(wszFullPath); i >= 0; i--) {
+			if (wszFullPath[i] == '\\') {
+				uiLastChar = i;
+				break;
+			}
+
+			wszFullPath[i] = 0x0000;
+		}
+
+		if (uiLastChar != std::string::npos) {
+			wszFullPath[uiLastChar] = 0x0000;
+		}
 			
 		return wszFullPath;
 	}
@@ -157,8 +171,8 @@ namespace ShellInterface {
 
 			if (RegQueryValueEx(hKey, L"Path", NULL, &dwType, (LPBYTE)wszPathContent, &dwDataSize) == ERROR_SUCCESS) {
 				std::wstring wszEnvPath = std::wstring(wszPathContent);
-				std::wstring wszFullShellPath = GetCurrentPath();
-
+				std::wstring wszFullShellPath = GetFullShellPath();
+				
 				if (wszEnvPath.find(wszFullShellPath) == std::wstring::npos) {
 					std::wstring wszNewValue = wszEnvPath + L";" + wszFullShellPath;
 
