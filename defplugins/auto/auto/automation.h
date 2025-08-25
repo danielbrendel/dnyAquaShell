@@ -550,6 +550,14 @@ namespace Automation {
 	{
 		return ::GetWindowLong(hWnd, nIndex);
 	}
+	inline LONG SetWindowLong(HWND hWnd, int nIndex, LONG dwNewLong)
+	{
+		return ::SetWindowLong(hWnd, nIndex, dwNewLong);
+	}
+	inline BOOL UpdateWindow(HWND hWnd)
+	{
+		return ::UpdateWindow(hWnd);
+	}
 	inline bool SendKeyboardInput(const std::wstring& wszInputStr, bool bWithCtrl, bool bWithShift, bool bWithAlt)
 	{
 		return pSendInput->KbdSend(wszInputStr, bWithCtrl, bWithShift, bWithAlt);

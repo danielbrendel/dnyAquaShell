@@ -413,6 +413,38 @@ public:
 	}
 } g_oGetWindowLongCommandInterface;
 
+class ISetWindowLongCommandInterface : public IResultCommandInterface<dnyInteger> {
+public:
+	ISetWindowLongCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		IResultCommandInterface<dnyInteger>::SetResult(Automation::SetWindowLong((HWND)pContext->GetPartInt(1), pContext->GetPartInt(2), pContext->GetPartInt(3)));
+
+		return true;
+	}
+} g_oSetWindowLongCommandInterface;
+
+class IUpdateWindowCommandInterface : public IResultCommandInterface<dnyBoolean> {
+public:
+	IUpdateWindowCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+		
+		IResultCommandInterface<dnyBoolean>::SetResult(Automation::UpdateWindow((HWND)pContext->GetPartInt(1)));
+
+		return true;
+	}
+} g_oUpdateWindowCommandInterface;
+
 class ISendKeyboardInputCommandInterface : public IResultCommandInterface<dnyBoolean> {
 public:
 	ISendKeyboardInputCommandInterface() {}
@@ -692,6 +724,8 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmessage", &g_oSendMessageCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_postmessage", &g_oPostMessageCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_getwindowlong", &g_oGetWindowLongCommandInterface, CT_INT);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_setwindowlong", &g_oSetWindowLongCommandInterface, CT_INT);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_updatewindow", &g_oUpdateWindowCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendkeystrokes", &g_oSendKeyboardInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_sendmousestrokes", &g_oSendMouseInputCommandInterface, CT_BOOL);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_keybdevent", &g_oKeyboardEventInputCommandInterface, CT_VOID);
@@ -736,6 +770,8 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmessage");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_postmessage");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_getwindowlong");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_setwindowlong");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_updatewindow");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendkeystrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_sendmousestrokes");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_keybdevent");
