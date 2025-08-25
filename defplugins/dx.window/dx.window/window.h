@@ -213,6 +213,21 @@ namespace DxWindow {
 			return this->m_bReady = true;
 		}
 
+		bool SetIcon(const std::wstring& wszIcon)
+		{
+			//Set form icon
+
+			HANDLE hIcon = LoadImage(0, wszIcon.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+			if (hIcon) {
+				SendMessage(this->m_hWindow, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+				SendMessage(this->m_hWindow, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+
+				return true;
+			}
+
+			return false;
+		}
+
 		void Release(void)
 		{
 			//Release resources
@@ -303,6 +318,21 @@ namespace DxWindow {
 
 	} oCreateCommandInterface;
 
+	class ISetIconCommandInterface : public IVoidCommandInterface {
+	public:
+		ISetIconCommandInterface() {}
+
+		virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+		{
+			ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+			pContext->ReplaceAllVariables(pInterfaceObject);
+
+			return oDxWindow.SetIcon(pContext->GetPartString(1));
+		}
+
+	} oSetIconCommandInterface;
+
 	class IReleaseCommandInterface : public IVoidCommandInterface {
 	public:
 		IReleaseCommandInterface() {}
@@ -383,6 +413,7 @@ namespace DxWindow {
 		#define REG_CMD(n, o, t) if (!pShellPluginAPI->Cmd_RegisterCommand(n, &o, t)) return false;
 		REG_CMD(L"dx.wnd.set_event", oSetEventCommandInterface, CT_VOID);
 		REG_CMD(L"dx.wnd.initialize", oCreateCommandInterface, CT_VOID);
+		REG_CMD(L"dx.wnd.seticon", oSetIconCommandInterface, CT_VOID);
 		REG_CMD(L"dx.wnd.release", oReleaseCommandInterface, CT_VOID);
 		REG_CMD(L"dx.wnd.is_valid", oIsValidCommandInterface, CT_BOOL);
 		REG_CMD(L"dx.wnd.get_handle", oGetHandleCommandInterface, CT_INT);
@@ -398,6 +429,7 @@ namespace DxWindow {
 		#define UNREG_CMD(n) pShellPluginAPI->Cmd_UnregisterCommand(n)
 		UNREG_CMD(L"dx.wnd.set_event");
 		UNREG_CMD(L"dx.wnd.initialize");
+		UNREG_CMD(L"dx.wnd.seticon");
 		UNREG_CMD(L"dx.wnd.release");
 		UNREG_CMD(L"dx.wnd.is_valid");
 		UNREG_CMD(L"dx.wnd.get_handle");
