@@ -721,6 +721,33 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_STYLE int <= " + std::to_wstring(GWL_STYLE) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_USERDATA int <= " + std::to_wstring(GWLP_USERDATA) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_WNDPROC int <= " + std::to_wstring(GWLP_WNDPROC) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_DLGMODALFRAME int <= " + std::to_wstring(WS_EX_DLGMODALFRAME) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_NOPARENTNOTIFY int <= " + std::to_wstring(WS_EX_NOPARENTNOTIFY) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_TOPMOST int <= " + std::to_wstring(WS_EX_TOPMOST) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_ACCEPTFILES int <= " + std::to_wstring(WS_EX_ACCEPTFILES) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_TRANSPARENT int <= " + std::to_wstring(WS_EX_TRANSPARENT) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_MDICHILD int <= " + std::to_wstring(WS_EX_MDICHILD) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_TOOLWINDOW int <= " + std::to_wstring(WS_EX_TOOLWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_WINDOWEDGE int <= " + std::to_wstring(WS_EX_WINDOWEDGE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_CLIENTEDGE int <= " + std::to_wstring(WS_EX_CLIENTEDGE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_CONTEXTHELP int <= " + std::to_wstring(WS_EX_CONTEXTHELP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_RIGHT int <= " + std::to_wstring(WS_EX_RIGHT) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_LEFT int <= " + std::to_wstring(WS_EX_LEFT) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_RTLREADING int <= " + std::to_wstring(WS_EX_RTLREADING) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_LTRREADING int <= " + std::to_wstring(WS_EX_LTRREADING) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_LEFTSCROLLBAR int <= " + std::to_wstring(WS_EX_LEFTSCROLLBAR) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_RIGHTSCROLLBAR int <= " + std::to_wstring(WS_EX_RIGHTSCROLLBAR) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_CONTROLPARENT int <= " + std::to_wstring(WS_EX_CONTROLPARENT) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_STATICEDGE int <= " + std::to_wstring(WS_EX_STATICEDGE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_APPWINDOW int <= " + std::to_wstring(WS_EX_APPWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_OVERLAPPEDWINDOW int <= " + std::to_wstring(WS_EX_OVERLAPPEDWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_PALETTEWINDOW int <= " + std::to_wstring(WS_EX_PALETTEWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_LAYERED int <= " + std::to_wstring(WS_EX_LAYERED) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_NOINHERITLAYOUT int <= " + std::to_wstring(WS_EX_NOINHERITLAYOUT) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_NOREDIRECTIONBITMAP int <= " + std::to_wstring(WS_EX_NOREDIRECTIONBITMAP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_LAYOUTRTL int <= " + std::to_wstring(WS_EX_LAYOUTRTL) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_COMPOSITED int <= " + std::to_wstring(WS_EX_COMPOSITED) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_WS_EX_NOACTIVATE int <= " + std::to_wstring(WS_EX_NOACTIVATE) + L";");
 
 	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_findwindow", &g_oFindWindowCommandInterface, CT_INT);

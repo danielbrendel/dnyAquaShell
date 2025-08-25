@@ -1526,8 +1526,8 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Register constants
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_BORDER int <= " + std::to_wstring(WS_BORDER) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CAPTION int <= " + std::to_wstring(WS_CAPTION) + L";");
-	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CHILD int <= " + std::to_wstring(WS_CHILD) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CHILDWINDOW int <= " + std::to_wstring(WS_CHILDWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CHILD int <= " + std::to_wstring(WS_CHILD) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CLIPCHILDREN int <= " + std::to_wstring(WS_CLIPCHILDREN) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_CLIPSIBLINGS int <= " + std::to_wstring(WS_CLIPSIBLINGS) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_DISABLED int <= " + std::to_wstring(WS_DISABLED) + L";");
@@ -1535,20 +1535,20 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_GROUP int <= " + std::to_wstring(WS_GROUP) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_HSCROLL int <= " + std::to_wstring(WS_HSCROLL) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_ICONIC int <= " + std::to_wstring(WS_ICONIC) + L";");
-	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MAXIMIZE int <= " + std::to_wstring(WS_MAXIMIZE) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MAXIMIZEBOX int <= " + std::to_wstring(WS_MAXIMIZEBOX) + L";");
-	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MINIMIZE int <= " + std::to_wstring(WS_MINIMIZE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MAXIMIZE int <= " + std::to_wstring(WS_MAXIMIZE) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MINIMIZEBOX int <= " + std::to_wstring(WS_MINIMIZEBOX) + L";");
-	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_OVERLAPPED int <= " + std::to_wstring(WS_OVERLAPPED) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_MINIMIZE int <= " + std::to_wstring(WS_MINIMIZE) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_OVERLAPPEDWINDOW int <= " + std::to_wstring(WS_OVERLAPPEDWINDOW) + L";");
-	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_POPUP int <= " + std::to_wstring(WS_POPUP) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_OVERLAPPED int <= " + std::to_wstring(WS_OVERLAPPED) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_POPUPWINDOW int <= " + std::to_wstring(WS_POPUPWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_POPUP int <= " + std::to_wstring(WS_POPUP) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_SIZEBOX int <= " + std::to_wstring(WS_SIZEBOX) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_SYSMENU int <= " + std::to_wstring(WS_SYSMENU) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_TABSTOP int <= " + std::to_wstring(WS_TABSTOP) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_THICKFRAME int <= " + std::to_wstring(WS_THICKFRAME) + L";");
-	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_TILED int <= " + std::to_wstring(WS_TILED) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_TILEDWINDOW int <= " + std::to_wstring(WS_TILEDWINDOW) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_TILED int <= " + std::to_wstring(WS_TILED) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_VISIBLE int <= " + std::to_wstring(WS_VISIBLE) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_VSCROLL int <= " + std::to_wstring(WS_VSCROLL) + L";");
 
