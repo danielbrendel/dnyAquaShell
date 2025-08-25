@@ -84,6 +84,25 @@ public:
 
 } g_oSetFormResCommandInterface;
 
+class ISetFormCenteredCommandInterface : public IVoidCommandInterface {
+public:
+	ISetFormCenteredCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		dnyWinForms::CForm* pForm = dnyWinForms::FindForm(pContext->GetPartString(1));
+		if (!pForm)
+			return false;
+
+		return pForm->Center();
+	}
+
+} g_oSetFormCenteredCommandInterface;
+
 class ISetFormTitleCommandInterface : public IVoidCommandInterface {
 public:
 	ISetFormTitleCommandInterface() {}
@@ -1538,6 +1557,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformicon", &g_oSetFormIconCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformpos", &g_oSetFormPosCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformres", &g_oSetFormResCommandInterface, CT_VOID);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformcentered", &g_oSetFormCenteredCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformtitle", &g_oSetFormTitleCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformstyle", &g_oSetFormStyleCommandInterface, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setcomppos", &g_oSetCompPosCommandInterface, CT_VOID);
@@ -1626,6 +1646,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformicon");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformpos");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformres");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformcentered");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformtitle");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformstyle");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setcomppos");

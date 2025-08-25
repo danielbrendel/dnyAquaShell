@@ -507,6 +507,28 @@ namespace dnyWinForms {
 
 			return false;
 		}
+		bool Center(void)
+		{
+			//Center the form to screen
+
+			//Get handle to desktop window
+			HWND hDesktopWindow = GetDesktopWindow();
+			if (!hDesktopWindow)
+				return false;
+
+			RECT sRect;
+
+			//Get screen size data of window
+			if (!GetWindowRect(hDesktopWindow, &sRect))
+				return false;
+
+			//Calculate position
+			int x = sRect.right / 2 - this->m_sResolution[0] / 2;
+			int y = sRect.bottom / 2 - this->m_sResolution[1] / 2;
+
+			//Update position
+			return this->SetPosition(x, y);
+		}
 		LONG_PTR SetStyle(LONG_PTR lStyle)
 		{
 			return SetWindowLongPtr(this->m_hWindow, GWL_STYLE, lStyle);
