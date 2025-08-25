@@ -1,4 +1,4 @@
-LIBRARY input
+LIBRARY dialog
 EXPORTS
 	DllMain @ 1
 	dnyAS_PluginLoad @ 2
