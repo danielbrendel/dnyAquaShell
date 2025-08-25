@@ -629,6 +629,19 @@ public:
 		return true;
 	}
 } g_oTimerExistsCommandInterface;
+class IClearTimerCommandInterface : public IVoidCommandInterface {
+public:
+	IClearTimerCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		return Timer::ClearTimer(pContext->GetPartString(1));
+	}
+} g_oClearTimerCommandInterface;
 class IProcessTimersCommandInterface : public IVoidCommandInterface {
 public:
 	IProcessTimersCommandInterface() {}
@@ -701,6 +714,13 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_HWHEEL int <= " + std::to_wstring(MOUSEEVENTF_HWHEEL) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_XBUTTON1 int <= " + std::to_wstring(XBUTTON1) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_MOUSE_XBUTTON2 int <= " + std::to_wstring(XBUTTON2) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_EXSTYLE int <= " + std::to_wstring(GWL_EXSTYLE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_HINSTANCE int <= " + std::to_wstring(GWLP_HINSTANCE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_HWNDPARENT int <= " + std::to_wstring(GWLP_HWNDPARENT) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_ID int <= " + std::to_wstring(GWL_ID) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_STYLE int <= " + std::to_wstring(GWL_STYLE) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_USERDATA int <= " + std::to_wstring(GWLP_USERDATA) + L";");
+	g_pShellPluginAPI->Scr_ExecuteCode(L"const AUT_GWL_WNDPROC int <= " + std::to_wstring(GWLP_WNDPROC) + L";");
 
 	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_findwindow", &g_oFindWindowCommandInterface, CT_INT);
@@ -737,6 +757,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_clpbclear", &g_oClearClipboardCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_addtimer", &g_oAddTimerCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_timerexists", &g_oTimerExistsCommandInterface, CT_INT);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_cleartimer", &g_oClearTimerCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_procevents", &g_oProcessHooksCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"aut_calctimers", &g_oProcessTimersCommandInterface, CT_VOID);
 
@@ -783,6 +804,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_clpbclear");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_addtimer");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_timerexists");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_cleartimer");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_procevents");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"aut_calctimers");
 }

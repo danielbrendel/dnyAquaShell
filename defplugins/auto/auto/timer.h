@@ -84,6 +84,16 @@ namespace Timer {
 			return false;
 		}
 
+		size_t FindTimer(const std::wstring& wszName)
+		{
+			for (size_t i = 0; i < this->m_vTimers.size(); i++) {
+				if (this->m_vTimers[i].wszName == wszName)
+					return i;
+			}
+
+			return std::string::npos;
+		}
+
 		bool AddTimer(const std::wstring& wszName, const dnyInteger iDelay)
 		{
 			if (!wszName.length())
@@ -130,6 +140,18 @@ namespace Timer {
 
 			return true;
 		}
+
+		bool ClearTimer(const std::wstring& wszTimer)
+		{
+			size_t uiTimer = this->FindTimer(wszTimer);
+			if ((uiTimer != std::string::npos) && (uiTimer < this->m_vTimers.size())) {
+				this->m_vTimers.erase(this->m_vTimers.begin() + uiTimer);
+
+				return true;
+			}
+
+			return false;
+		}
 	} oTimerMgr;
 
 	bool AddTimer(const std::wstring& wszName, const dnyInteger iDelay)
@@ -145,5 +167,10 @@ namespace Timer {
 	bool TimerExists(const std::wstring& wszTimer)
 	{
 		return oTimerMgr.NameAlreadyInUse(wszTimer);
+	}
+
+	bool ClearTimer(const std::wstring& wszTimer)
+	{
+		return oTimerMgr.ClearTimer(wszTimer);
 	}
 }
