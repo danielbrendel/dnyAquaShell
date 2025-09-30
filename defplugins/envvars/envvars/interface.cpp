@@ -25,6 +25,30 @@ std::vector<std::wstring> split(const std::wstring& wszString, const wchar_t wcS
 	return vResult;
 }
 
+class IGetEnvVarCommandInterface : public IResultCommandInterface<dnyString> {
+public:
+	IGetEnvVarCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		std::wstring wszName = pContext->GetPartString(1);
+
+		wchar_t wszValue[32767] = { 0 };
+		DWORD dwSize = GetEnvironmentVariable(wszName.c_str(), wszValue, sizeof(wszValue));
+
+		if ((dwSize > 0) && (dwSize < sizeof(wszValue))) {
+			this->SetResult(std::wstring(wszValue));
+		}
+
+		return ((dwSize) && (GetLastError() == ERROR_SUCCESS));
+	}
+
+} g_oGetEnvVarCommandInterface;
+
 bool RegisterEnvironmentVariables(void)
 {
 	//Register environment variables
@@ -68,6 +92,8 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"env_getvariable", &g_oGetEnvVarCommandInterface, CT_STRING);
+
 	//Register environment variables
 	return RegisterEnvironmentVariables();
 }
@@ -75,6 +101,8 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
+
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"env_getvariable");
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)
