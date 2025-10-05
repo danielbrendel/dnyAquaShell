@@ -5,11 +5,11 @@ IShellPluginAPI* g_pShellPluginAPI;
 
 //Plugin infos
 plugininfo_s g_sPluginInfos = {
-	L"EnvVars",
+	L"Env",
 	L"1.0",
 	L"Daniel Brendel",
 	L"dbrendel1988<at>gmail<dot>com",
-	L"Windows environment variable provider"
+	L"Windows environment variables provider"
 };
 
 std::vector<std::wstring> split(const std::wstring& wszString, const wchar_t wcSplitChar)

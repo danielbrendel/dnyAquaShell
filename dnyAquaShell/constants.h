@@ -16,8 +16,9 @@
 #define DNY_AS_PRODUCT_CODENAME L"dnyAquaShell"
 #define DNY_AS_PRODUCT_VERSION L"1.0"
 #define DNY_AS_PRODUCT_AUTHOR L"Daniel Brendel"
-#define DNY_AS_PRODUCT_CONTACT L"dbrendel1988<at>gmail<dot>com"
-#define DNY_AS_PRODUCT_LICENCE L"The MIT License"
+#define DNY_AS_PRODUCT_CONTACT L"https://www.danielbrendel.com"
+#define DNY_AS_PRODUCT_REPOSITORY L"https://github.com/danielbrendel/dnyAquaShell"
+#define DNY_AS_PRODUCT_LICENCE L"MIT"
 
 #define DNY_AS_PRODUCT_VERSION_W MAKEWORD(1, 0)
 

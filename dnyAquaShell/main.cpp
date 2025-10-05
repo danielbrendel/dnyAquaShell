@@ -32,8 +32,9 @@ namespace ShellInterface {
 		//Print about info
 
 		std::wcout << L"* " DNY_AS_PRODUCT_NAME L" (" DNY_AS_PRODUCT_CODENAME L") v" DNY_AS_PRODUCT_VERSION << std::endl;
-		std::wcout << L"* Developed by " DNY_AS_PRODUCT_AUTHOR L" (" DNY_AS_PRODUCT_CONTACT L")" << std::endl;
-		std::wcout << L"* Released under " DNY_AS_PRODUCT_LICENCE << std::endl;
+		std::wcout << L"* An open-source project released under the " DNY_AS_PRODUCT_LICENCE L" license" << std::endl;
+		std::wcout << L"* Developed by " DNY_AS_PRODUCT_AUTHOR << L" (" DNY_AS_PRODUCT_CONTACT L")" << std::endl;
+		std::wcout << L"* Repository: " DNY_AS_PRODUCT_REPOSITORY << std::endl;
 	}
 
 	void SI_StandardOutput(const std::wstring& wszText)
@@ -991,11 +992,11 @@ namespace ShellInterface {
 
 			//Print info text if in interactive mode
 			if (this->m_bInteractiveMode) {
-				std::wcout << L"==============================================================" << std::endl;
+				std::wcout << L"===============================================================" << std::endl;
 
 				PrintAboutInfo();
 
-				std::wcout << L"==============================================================" << std::endl << std::endl;
+				std::wcout << L"===============================================================" << std::endl << std::endl;
 
 			}
 

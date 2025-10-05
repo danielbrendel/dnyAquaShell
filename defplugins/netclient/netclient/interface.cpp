@@ -24,6 +24,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
+	//Initialize NetClient component
 	return NetClient::Initialize(pInterfaceData);
 }
 
@@ -31,6 +32,7 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
+	//Cleanup NetClient component
 	NetClient::Release();
 }
 

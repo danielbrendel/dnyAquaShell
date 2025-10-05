@@ -409,6 +409,7 @@ namespace dnyWinForms {
 		std::wstring m_wszClassName;
 		ATOM m_hClass;
 		HWND m_hWindow;
+		HBRUSH m_hbrStaticBackground;
 		WFDimension m_sPosition;
 		WFDimension m_sResolution;
 		std::vector<IBaseComponent*> m_vAttachedComponents;
@@ -707,6 +708,9 @@ namespace dnyWinForms {
 			//Window procedure of form
 			
 			switch (uMsg) {
+			case WM_CREATE: //Window creation message fired
+				this->m_hbrStaticBackground = CreateSolidBrush(GetSysColor(COLOR_WINDOW)); //Create background brush for static controls
+				break;
 			case WM_COMMAND: //Window command message fired
 				if (this->InformCommandMessage(hWnd, uMsg, wParam, lParam)) return 0;
 				break;
@@ -716,11 +720,16 @@ namespace dnyWinForms {
 			case WM_PAINT: //Window shall paint
 				this->Draw();
 				break;
+			case WM_CTLCOLORSTATIC:
+				SetBkMode((HDC)wParam, TRANSPARENT); //Set label background to transparent
+				return (INT_PTR)GetSysColorBrush(COLOR_WINDOW); //Return the brush for the background
+				break;
 			case WM_QUIT: //Window shall close
 				this->SignalRelease(); //Signal host to release this Form
 				return 0;
 				break;
 			case WM_DESTROY: { //Window destroying requested
+				DeleteObject(this->m_hbrStaticBackground); //Delete brush object
 				PostQuitMessage(EXIT_SUCCESS); //Post quit message into queue
 				this->SignalRelease(); //Signal host to release this Form
 				return 0;

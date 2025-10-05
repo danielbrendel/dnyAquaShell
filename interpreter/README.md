@@ -1,6 +1,6 @@
 # dnyScriptInterpreter developed by Daniel Brendel
 
-(C) 2017 - 2024 by Daniel Brendel
+(C) 2017 - 2025 by Daniel Brendel
 
 **Version**: 1.0\
 **Contact**: dbrendel1988(at)gmail(dot)com\
@@ -13,7 +13,7 @@ Released under the MIT license
 * User-friendly scripting syntax
 * Interface between script engine and engine user
 * Default internal commands
-* Sticks to C++ STD in order to provide compatibility
+* Sticks to C++ Standard Library for compatibility purposes
  
 ## Syntax:
 The script language is a command-based language. This makes the syntax be as follows:

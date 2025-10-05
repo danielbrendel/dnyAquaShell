@@ -693,7 +693,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
-	//Set pointer
+	//Initialize components
 	Automation::Init(pInterfaceData);
 	Timer::Init(pInterfaceData);
 

@@ -5,8 +5,6 @@
 
 IShellPluginAPI* g_pShellPluginAPI;
 HINSTANCE g_hDllModule;
-HANDLE g_hActx;
-ULONG_PTR g_ulpCookie;
 
 class ISpawnFormCommandInterface : public IResultCommandInterface<dnyInteger> {
 public:
@@ -1552,7 +1550,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_VISIBLE int <= " + std::to_wstring(WS_VISIBLE) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_VSCROLL int <= " + std::to_wstring(WS_VSCROLL) + L";");
 
-	//Register example commands
+	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawnform", &g_oSpawnFormCommand, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformicon", &g_oSetFormIconCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformpos", &g_oSetFormPosCommandInterface, CT_VOID);
@@ -1619,17 +1617,6 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_getcurrentfocus", &g_oGetCurrentFocusCommand, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_freeform", &g_oFreeFormCommand, CT_VOID);
 
-	ACTCTX actCtx = { 0 };
-	actCtx.cbSize = sizeof(actCtx);
-	actCtx.hModule = g_hDllModule;
-	actCtx.lpResourceName = MAKEINTRESOURCE(2);
-	actCtx.dwFlags = ACTCTX_FLAG_HMODULE_VALID | ACTCTX_FLAG_RESOURCE_NAME_VALID;
-
-	g_hActx = CreateActCtx(&actCtx);
-	if (g_hActx != INVALID_HANDLE_VALUE) {
-		ActivateActCtx(g_hActx, &g_ulpCookie);
-	}
-
 	return true;
 }
 
@@ -1637,11 +1624,7 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
-	if (g_hActx != INVALID_HANDLE_VALUE) {
-		DeactivateActCtx(0, g_ulpCookie);
-		ReleaseActCtx(g_hActx);
-	}
-
+	//Unregister commands
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnform");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformicon");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformpos");

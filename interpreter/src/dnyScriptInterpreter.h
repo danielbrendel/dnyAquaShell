@@ -11,7 +11,7 @@
 /*
 	dnyScriptInterpreter developed by Daniel Brendel
 
-	(C) 2017 - 2024 by Daniel Brendel
+	(C) 2017 - 2025 by Daniel Brendel
 
 	Version: 1.0
 	Contact: dbrendel1988<at>gmail<dot>com

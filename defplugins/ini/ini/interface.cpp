@@ -100,7 +100,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
-	//Register example commands
+	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"ini_read", &g_oIniReadCommandInterface, CT_STRING);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"ini_write", &g_oIniWriteCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"ini_delete", &g_oIniDeleteCommandInterface, CT_VOID);
@@ -112,6 +112,7 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
+	//Unregister commands
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"ini_read");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"ini_write");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"ini_delete");
