@@ -21,6 +21,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 		return false;
 	}
 
+	//Initialize FileIO component
 	if (!FileIO::Initialize(pInterfaceData))
 		return false;
 
@@ -34,6 +35,7 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
+	//Cleanup component resources
 	FileIO::Free();
 }
 

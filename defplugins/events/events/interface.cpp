@@ -215,7 +215,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
-	//Register example commands
+	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.register", &g_oRegEventCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.add", &g_oAddEventHandlerCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"event.exists", &g_oEventExistsHandlerCommandInterface, CT_BOOL);
@@ -229,6 +229,7 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
+	//Unregister commands
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.register");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.add");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"event.exists");

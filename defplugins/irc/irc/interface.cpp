@@ -24,6 +24,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
+	//Initialize IRC component
 	return IRCFramework::Initialize(pInterfaceData);
 }
 

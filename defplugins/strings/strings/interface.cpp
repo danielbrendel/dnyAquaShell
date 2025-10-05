@@ -424,6 +424,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"s_ltrim", &g_oLTrimCommand, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"s_fmtescseq", &g_oFmtHexEscSeqCommandInterface, CT_STRING);
 
+	//Register CVar for token index
 	g_pCommonArrayIndex = (ICVar<dnyInteger>*)g_pShellPluginAPI->Cv_RegisterCVar(L"token_index", CT_INT);
 	if (!g_pCommonArrayIndex)
 		return false;
