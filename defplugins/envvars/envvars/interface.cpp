@@ -44,10 +44,32 @@ public:
 			this->SetResult(std::wstring(wszValue));
 		}
 
-		return ((dwSize) && (GetLastError() == ERROR_SUCCESS));
+		return ((dwSize) && (GetLastError() != ERROR_ENVVAR_NOT_FOUND));
 	}
 
 } g_oGetEnvVarCommandInterface;
+
+class ISetEnvVarCommandInterface : public IResultCommandInterface<dnyBoolean> {
+public:
+	ISetEnvVarCommandInterface() {}
+
+	virtual bool CommandCallback(void* pCodeContext, void* pInterfaceObject)
+	{
+		ICodeContext* pContext = (ICodeContext*)pCodeContext;
+
+		pContext->ReplaceAllVariables(pInterfaceObject);
+
+		std::wstring wszName = pContext->GetPartString(1);
+		std::wstring wszValue = pContext->GetPartString(2);
+
+		BOOL bResult = SetEnvironmentVariable(wszName.c_str(), wszValue.c_str());
+
+		this->SetResult(bResult == TRUE);
+
+		return true;
+	}
+
+} g_oSetEnvVarCommandInterface;
 
 bool RegisterEnvironmentVariables(void)
 {
@@ -92,7 +114,9 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	//Store plugin infos
 	memcpy(pPluginInfos, &g_sPluginInfos, sizeof(plugininfo_s));
 
+	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"env_getvariable", &g_oGetEnvVarCommandInterface, CT_STRING);
+	g_pShellPluginAPI->Cmd_RegisterCommand(L"env_setvariable", &g_oSetEnvVarCommandInterface, CT_BOOL);
 
 	//Register environment variables
 	return RegisterEnvironmentVariables();
@@ -102,7 +126,9 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
+	//Unregister commands
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"env_getvariable");
+	g_pShellPluginAPI->Cmd_UnregisterCommand(L"env_setvariable");
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, LPVOID lpvReserved)
