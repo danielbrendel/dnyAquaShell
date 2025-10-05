@@ -1552,7 +1552,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_VISIBLE int <= " + std::to_wstring(WS_VISIBLE) + L";");
 	g_pShellPluginAPI->Scr_ExecuteCode(L"const WS_VSCROLL int <= " + std::to_wstring(WS_VSCROLL) + L";");
 
-	//Register example commands
+	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_spawnform", &g_oSpawnFormCommand, CT_INT);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformicon", &g_oSetFormIconCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"wnd_setformpos", &g_oSetFormPosCommandInterface, CT_VOID);
@@ -1642,6 +1642,7 @@ void dnyAS_PluginUnload(void)
 		ReleaseActCtx(g_hActx);
 	}
 
+	//Unregister commands
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_spawnform");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformicon");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"wnd_setformpos");

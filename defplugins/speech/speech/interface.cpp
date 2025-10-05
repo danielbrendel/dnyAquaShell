@@ -174,7 +174,7 @@ bool dnyAS_PluginLoad(dnyVersionInfo version, IShellPluginAPI* pInterfaceData, p
 	if (!SpeechInt::Initialize())
 		return false;
 
-	//Register example commands
+	//Register commands
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"spk_setvoice", &g_oSetVoiceCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"spk_setpitch", &g_oSetPitchCommandInterface, CT_VOID);
 	g_pShellPluginAPI->Cmd_RegisterCommand(L"spk_setvolume", &g_oSetVolumeCommandInterface, CT_VOID);
@@ -193,6 +193,7 @@ void dnyAS_PluginUnload(void)
 {
 	//Called when plugin gets unloaded
 
+	//Unregister commands
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"spk_setvoice");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"spk_setpitch");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"spk_setvolume");
@@ -204,6 +205,7 @@ void dnyAS_PluginUnload(void)
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"spk_speak");
 	g_pShellPluginAPI->Cmd_UnregisterCommand(L"spk_speakasync");
 
+	//Free resources
 	SpeechInt::Free();
 }
 
