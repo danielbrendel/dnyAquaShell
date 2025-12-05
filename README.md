@@ -9,6 +9,16 @@
     Released under the MIT license
 </p>
 
+<p align="center">
+    <img src="https://img.shields.io/badge/language-cpp-orange" alt="language-cpp"/>
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="license-mit"/>
+    <img src="https://img.shields.io/badge/maintained-yes-green" alt="maintained-yes"/>
+</p>
+
+<p align="center">
+	<img src="dnyAquaShell/sample.png"/>
+</p>
+
 ## Information
 
 **Version**: 1.0\
@@ -30,16 +40,12 @@ function recursive void(count int)
 {
   if (%count, -ls, %MAX_COUNT) {
     ++ count;
-    print "Count value: %count";
+    print "Current value: %count";
     call recursive(%count) => void;
   };
 };
 
 call recursive(0) => void;
-
-print "Done.";
-
-pause;
 ```
 
 ## Basic commands:
