@@ -9,6 +9,21 @@
     Released under the MIT license
 </p>
 
+<p align="center">
+    <img src="https://img.shields.io/badge/language-cpp-orange" alt="language-cpp"/>
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="license-mit"/>
+    <img src="https://img.shields.io/badge/maintained-yes-green" alt="maintained-yes"/>
+</p>
+
+<p align="center">
+    <a href="https://github.com/sponsors/danielbrendel" target="_blank"><img height="35" style="border:0px;height:35px;" src="https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86" alt="Sponsor me on GitHub"/></a>&nbsp;
+    <a href='https://ko-fi.com/danielbrendel' target='_blank'><img height='35' style='border:0px;height:35px;' src='https://storage.ko-fi.com/cdn/kofi2.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+</p>
+
+<p align="center">
+	<img src="dnyAquaShell/sample.png"/>
+</p>
+
 ## Information
 
 **Version**: 1.0\
@@ -30,16 +45,12 @@ function recursive void(count int)
 {
   if (%count, -ls, %MAX_COUNT) {
     ++ count;
-    print "Count value: %count";
+    print "Current value: %count";
     call recursive(%count) => void;
   };
 };
 
 call recursive(0) => void;
-
-print "Done.";
-
-pause;
 ```
 
 ## Basic commands:
